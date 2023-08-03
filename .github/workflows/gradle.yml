@@ -26,8 +26,8 @@ jobs:
           java-version: '17'
           distribution: 'temurin' # JDK를 제공하는 vender사 이름
 
-      ## 1) application.yml 파일 생성하기
-      - name: make application.yml
+      ## 1) 테스트용 application.yml 파일 생성하기
+      - name: Make test application.yml
         run: |
           cd ./src/main/resources
           touch ./application.yml
@@ -37,22 +37,19 @@ jobs:
       ## 2) 스프링 프로젝트 jar 파일 빌드
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
       - name: Build with Gradle
         run: ./gradlew build
 
-      ## 3) 스프링 프로젝트 jar 파일 빌드
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - name: Build with Gradle
-        run: ./gradlew build
-
-        ## 4) 배포용 application.yml 파일 생성
+        ## 3) 배포용 application.yml 파일 생성
       - name: Make prod application.yml
         run: |
-          cd ./src/main/resources
-          touch ./application.yml
           echo "${{ secrets.PROD_APPLICATION }}" > ./application.yml
         shell: bash
+
+        ## 4) jar 파일 생성
+      - name: Make jar
+        run: ./gradlew bootJar
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -60,5 +57,22 @@ jobs:
       ## 5) Docker Hub에 이미지 push
       - name: Docker build
         run: |
-           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-           docker buildx build --platform linux/amd64,linux/arm64 --tag soomanbaek/toquiz-api:1.0 --push --file Dockerfile .
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker buildx build --platform linux/amd64,linux/arm64 --tag soomanbaek/toquiz-api:1.0 --push --file Dockerfile .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    name: deploy
+    steps:
+        ## 6) ec2에서 docker compose up
+      - name: EC2 docker compose up
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.AWS_SSH_HOST }}
+          username: ${{ secrets.AWS_SSH_USERNAME }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          port: ${{ secrets.AWS_SSH_PORT }}
+          script: |
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            docker compose up -d
