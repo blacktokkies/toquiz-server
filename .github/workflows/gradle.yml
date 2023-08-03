@@ -39,3 +39,24 @@ jobs:
         run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew build
+
+      ## 3) 스프링 프로젝트 jar 파일 빌드
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew build
+
+        ## 4) 배포용 application.yml 파일 생성
+      - name: Make prod application.yml
+        run: |
+          cd ./src/main/resources
+          touch ./application.yml
+          echo "${{ secrets.PROD_APPLICATION }}" > ./application.yml
+        shell: bash
+
+      ## 5) Docker Hub에 이미지 push
+      - name: Docker build
+        run: |
+           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+           docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_API_REPO }}:${{ secrets.DOCKER_TAG }} .
+           docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_API_REPO }}:${{ secrets.DOCKER_TAG }}
