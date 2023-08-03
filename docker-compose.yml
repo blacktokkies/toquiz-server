@@ -1,6 +1,14 @@
 version: "3"
 services:
-  spring:
+  nginx:
+    container_name: nginx
+    image: soomanbaek/toquiz-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - api-server
+
+  api-server:
     container_name: api-server
     image: soomanbaek/toquiz-api:1.0
     build: .
