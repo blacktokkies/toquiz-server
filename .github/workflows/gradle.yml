@@ -4,7 +4,7 @@
 # documentation.
 # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
-name: Java CI With Gradle
+name: Java CI/CD With Gradle
 
 on:
   push:
@@ -58,7 +58,7 @@ jobs:
       - name: Docker build
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker buildx build --platform linux/amd64,linux/arm64 --tag soomanbaek/toquiz-api:1.0 --push --file Dockerfile .
+          docker buildx build --platform linux/amd64,linux/arm64 --tag ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_API_REPO }}:${{ secrets.DOCKER_TAG }} --push --file Dockerfile .
 
   deploy:
     needs: build
@@ -74,5 +74,10 @@ jobs:
           key: ${{ secrets.AWS_SSH_KEY }}
           port: ${{ secrets.AWS_SSH_PORT }}
           script: |
-            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            docker compose up -d
+            sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_API_REPO }}:${{ secrets.DOCKER_TAG }}
+            if [ "$(docker ps -aq -f name=${{ secrets.CONTAINER_NAME }})" ]; then
+              docker stop ${{ secrets.CONTAINER_NAME }}
+              docker rm ${{ secrets.CONTAINER_NAME }}
+            fi
+            sudo docker run -d -p 8080:8080 --name ${{ secrets.CONTAINER_NAME }} --restart always ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_API_REPO }}:${{ secrets.DOCKER_TAG }}
