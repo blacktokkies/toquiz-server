@@ -10,4 +10,7 @@ toquiz(토퀴즈)는 사용자가 패널에 익명으로 질문을 올리고 답
 
 ## ⚙️ 기능
 
+## 📌 ETC
+[Team Notion](https://black-tokkies.notion.site/toquiz-0ba770856ed24ba39bdec1636d23b3ab?pvs=4)
 
+[Commit Convetion](https://black-tokkies.notion.site/Github-commit-convention-Server-1c19eefe8be6467797c159cd8c30e394?pvs=4)
