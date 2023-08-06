@@ -1,8 +1,10 @@
 package blacktokkies.toquiz.member.domain;
 
 import blacktokkies.toquiz.common.domain.BaseTime;
+import blacktokkies.toquiz.member.dto.SignUpRequestDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -21,7 +23,7 @@ public class Member extends BaseTime {
     @Column(nullable = false)
     private String email;
 
-    @Column(length = 20, nullable = false)
+    @Column(nullable = false)
     private String password;
 
     @Column(length = 20, nullable = false)
@@ -30,4 +32,12 @@ public class Member extends BaseTime {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Provider provider;
+
+    @Builder
+    public Member(String email, String password, String nickname, Provider provider) {
+        this.email = email;
+        this.password = password;
+        this.nickname = nickname;
+        this.provider = provider;
+    }
 }
