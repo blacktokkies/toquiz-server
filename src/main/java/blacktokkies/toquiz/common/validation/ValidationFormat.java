@@ -1,0 +1,10 @@
+package blacktokkies.toquiz.common.validation;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public class ValidationFormat {
+    public static final String MEMBER_PASSWORD_FORMAT= "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$";
+}
