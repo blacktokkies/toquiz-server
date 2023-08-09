@@ -33,12 +33,16 @@ public class Member extends BaseTime implements UserDetails{
     @Enumerated(EnumType.STRING)
     private Provider provider;
 
+    @Column(nullable = false)
+    private String activeInfoId;
+
     @Builder
-    public Member(String email, String password, String nickname, Provider provider) {
+    public Member(String email, String password, String nickname, Provider provider, String activeInfoId) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.provider = provider;
+        this.activeInfoId = activeInfoId;
     }
 
     @Override
