@@ -30,5 +30,5 @@ public class Question extends BaseTime {
     private Panel panel;
 
     @Column(nullable = false)
-    private ObjectId toquizMemberId;
+    private String activeInfoId;
 }
