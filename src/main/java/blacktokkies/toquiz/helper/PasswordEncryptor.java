@@ -9,4 +9,8 @@ public class PasswordEncryptor {
     public static String encryptPassword(String password){
         return passwordEncoder.encode(password);
     }
+
+    public static boolean matchPassowrd(String password, String encryptedPassword){
+        return passwordEncoder.matches(password, encryptedPassword);
+    }
 }
