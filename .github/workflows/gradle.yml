@@ -8,7 +8,10 @@ name: Java CI/CD With Gradle
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -21,25 +24,25 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
-        uses: actions/setup-java@v3 # JDK를 다운받고 캐싱해주는 Action
-        with:   # Actions에 전달하는 input을 정의하는 곳
+        uses: actions/setup-java@v3
+        with:
           java-version: '17'
-          distribution: 'temurin' # JDK를 제공하는 vender사 이름
+          distribution: 'temurin'
 
-#      ## 1) 테스트용 application.yml 파일 생성하기
-#      - name: Make test application.yml
-#        run: |
-#          cd ./src/main/resources
-#          touch ./application.yml
-#          echo "${{ secrets.TEST_APPLICATION }}" > ./application.yml
-#        shell: bash
+      ## 1) 테스트용 application.yml 파일 생성하기
+      - name: Make test application.yml
+        run: |
+          cd ./src/main/resources
+          touch ./application.yml
+          echo "${{ secrets.TEST_APPLICATION }}" > ./application.yml
+        shell: bash
 
       ## 2) 스프링 프로젝트 jar 파일 빌드
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-#      - name: Build with Gradle
-#        run: ./gradlew build
+      - name: Build with Gradle
+        run: ./gradlew build
 
         ## 3) 배포용 application.yml 파일 생성
       - name: Make prod application.yml
@@ -83,4 +86,4 @@ jobs:
               docker stop ${{ secrets.CONTAINER_NAME }}
               docker rm ${{ secrets.CONTAINER_NAME }}
             fi
-            sudo docker run -d -p 8080:8080 --name ${{ secrets.CONTAINER_NAME }} --restart always ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_API_REPO }}:${{ secrets.DOCKER_TAG }}
+            sudo docker compose up -d
