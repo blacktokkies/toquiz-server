@@ -1,4 +1,4 @@
-package blacktokkies.toquiz.member.dto.request;
+package blacktokkies.toquiz.auth.dto.request;
 
 import blacktokkies.toquiz.member.domain.Member;
 import blacktokkies.toquiz.member.domain.Provider;
