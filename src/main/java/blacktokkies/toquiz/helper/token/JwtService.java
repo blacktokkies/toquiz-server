@@ -1,5 +1,7 @@
 package blacktokkies.toquiz.helper.token;
 
+import blacktokkies.toquiz.common.error.exception.RestApiException;
+import blacktokkies.toquiz.member.domain.Member;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -15,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static blacktokkies.toquiz.common.error.errorcode.AuthErrorCode.INVALID_REFRESH_TOKEN;
+
 @Service
 public class JwtService {
     @Value("${application.security.jwt.secret-key}")
@@ -27,9 +31,9 @@ public class JwtService {
         return extractClaims(token, Claims::getSubject);
     }
 
-    public <T> T extractClaims(String token, Function<Claims, T> claimsRsolver){
+    public <T> T extractClaims(String token, Function<Claims, T> claimsResolver){
         final Claims claims = extractAllClaims(token);
-        return claimsRsolver.apply(claims);
+        return claimsResolver.apply(claims);
     }
 
     private Claims extractAllClaims(String token){
@@ -43,6 +47,10 @@ public class JwtService {
     private SecretKey getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public String getSubject(String token){
+        return extractClaims(token, Claims::getSubject);
     }
 
     public String generateRefreshToken(String subject){
@@ -78,5 +86,11 @@ public class JwtService {
     public boolean isTokenValid(String token, UserDetails userDetails){
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    }
+
+    public String refreshAccessToken(String refreshToken, Member member){
+        if(!isTokenValid(refreshToken, member))
+            throw new RestApiException(INVALID_REFRESH_TOKEN);
+        return generateAccessToken(member.getEmail());
     }
 }
