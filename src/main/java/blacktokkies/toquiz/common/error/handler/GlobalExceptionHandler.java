@@ -22,6 +22,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(RestApiException.class)
     public ResponseEntity<Object> handleCustomException(RestApiException e){
         final ErrorCode errorCode = e.getErrorCode();
+        log.warn("RestApiException", e);
         return handleExceptionInternal(errorCode);
     }
 
@@ -39,7 +40,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         HttpStatusCode status,
         WebRequest webRequest) {
 
-        log.warn("handleIllegalArgument", e);
+        log.warn("handleMethodArgument", e);
         final ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
 
         return handleExceptionInternal(e, errorCode);
