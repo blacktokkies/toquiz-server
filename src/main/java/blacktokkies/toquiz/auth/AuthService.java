@@ -1,45 +1,45 @@
 package blacktokkies.toquiz.auth;
 
+import blacktokkies.toquiz.activeinfo.ActiveInfoRepository;
+import blacktokkies.toquiz.activeinfo.domain.ActiveInfo;
 import blacktokkies.toquiz.common.error.exception.RestApiException;
 import blacktokkies.toquiz.helper.token.JwtService;
 import blacktokkies.toquiz.helper.PasswordEncryptor;
-import blacktokkies.toquiz.helper.token.RefreshTokenRepository;
-import blacktokkies.toquiz.helper.token.RefreshToken;
 import blacktokkies.toquiz.auth.dto.request.LoginRequestDto;
 import blacktokkies.toquiz.auth.dto.response.LoginResponseDto;
-import blacktokkies.toquiz.common.error.errorcode.AuthErrorCode;
+import blacktokkies.toquiz.helper.token.RefreshTokenService;
 import blacktokkies.toquiz.member.MemberRepository;
 import blacktokkies.toquiz.member.domain.Member;
 import blacktokkies.toquiz.auth.dto.request.SignUpRequestDto;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static blacktokkies.toquiz.common.error.errorcode.AuthErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AuthService {
     private final MemberRepository memberRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final ActiveInfoRepository activeInfoRepository;
+    private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
-    @Value("${application.security.jwt.refresh-token.expiration}")
-    private Integer REFRESH_TOKEN_EXPIRATION;
-
     @Transactional
     public void signUp(SignUpRequestDto signUpRequestDto){
         checkExistDuplicateEmail(signUpRequestDto.getEmail());
         checkExistDuplicateNickname(signUpRequestDto.getNickname());
-        Member member = signUpRequestDto.toMember();
+
+        ActiveInfo activeInfo = activeInfoRepository.save(new ActiveInfo());
+        Member member = signUpRequestDto.toMemberWith(activeInfo);
 
         memberRepository.save(member);
     }
 
     public LoginResponseDto login(LoginRequestDto loginRequestDto){
         Member member = memberRepository.findByEmail(loginRequestDto.getEmail())
-            .orElseThrow(() -> new RestApiException(AuthErrorCode.NOT_EXIST_MEMBER));
+            .orElseThrow(() -> new RestApiException(NOT_EXIST_MEMBER));
 
         checkCorrectPassword(loginRequestDto.getPassword(), member.getPassword());
         String accessToken = jwtService.generateAccessToken(member.getEmail());
@@ -47,37 +47,43 @@ public class AuthService {
         return LoginResponseDto.toDto(member, accessToken);
     }
 
-    @Transactional
-    public void issueRefreshTokenCookie(HttpServletResponse response, String email){
-        String refreshToken = jwtService.generateRefreshToken(email);
-
-        refreshTokenRepository.save(new RefreshToken(email, refreshToken));
-
-        Cookie cookie = new Cookie("refresh_token", refreshToken);
-        cookie.setMaxAge(REFRESH_TOKEN_EXPIRATION);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-
-        response.addCookie(cookie);
+    public void logout(){
+        Member member = (Member) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        refreshTokenService.delete(member.getEmail());
     }
 
+    public String refresh(String refreshToken) {
+        System.out.println(refreshToken);
+        checkValidRefreshToken(refreshToken);
 
+        String email = jwtService.getSubject(refreshToken);
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new RestApiException(NOT_EXIST_MEMBER));
 
-    void checkExistDuplicateEmail(String email){
+        return jwtService.refreshAccessToken(refreshToken, member);
+    }
+
+    private void checkExistDuplicateEmail(String email){
         if(memberRepository.existsByEmail(email)){
-            throw new RestApiException(AuthErrorCode.DUPLICATE_EMAIL);
+            throw new RestApiException(DUPLICATE_EMAIL);
         }
     }
 
-    void checkExistDuplicateNickname(String nickname){
+    private void checkExistDuplicateNickname(String nickname){
         if(memberRepository.existsByNickname(nickname)){
-            throw new RestApiException(AuthErrorCode.DUPLICATE_NICKNAME);
+            throw new RestApiException(DUPLICATE_NICKNAME);
         }
     }
 
-    void checkCorrectPassword(String inputPassword, String memberPassword){
+    private void checkCorrectPassword(String inputPassword, String memberPassword){
         if(!PasswordEncryptor.matchPassowrd(inputPassword, memberPassword)){
-            throw new RestApiException(AuthErrorCode.INVALID_PASSWORD);
+            throw new RestApiException(INVALID_PASSWORD);
+        }
+    }
+
+    private void checkValidRefreshToken(String refreshToken){
+        if(refreshToken == null){
+            throw new RestApiException(INVALID_REFRESH_TOKEN);
         }
     }
 }
