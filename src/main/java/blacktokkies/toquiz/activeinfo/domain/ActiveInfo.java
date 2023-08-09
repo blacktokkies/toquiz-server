@@ -1,4 +1,4 @@
-package blacktokkies.toquiz.toquizmember.domain;
+package blacktokkies.toquiz.activeinfo.domain;
 
 import jakarta.persistence.Id;
 import lombok.AccessLevel;
@@ -6,14 +6,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Document(collection = "toquiz-member")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ToquizMember {
+@NoArgsConstructor
+public class ActiveInfo {
     @Id
-    private String id;
-
-    private List<ActivePanel> activePanels;
+    String id;
+    private final Map<String, ActivePanel> activePanels = new HashMap<>();
 }
