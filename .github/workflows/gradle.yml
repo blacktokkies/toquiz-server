@@ -26,26 +26,29 @@ jobs:
           java-version: '17'
           distribution: 'temurin' # JDK를 제공하는 vender사 이름
 
-      ## 1) 테스트용 application.yml 파일 생성하기
-      - name: Make test application.yml
-        run: |
-          cd ./src/main/resources
-          touch ./application.yml
-          echo "${{ secrets.TEST_APPLICATION }}" > ./application.yml
-        shell: bash
+#      ## 1) 테스트용 application.yml 파일 생성하기
+#      - name: Make test application.yml
+#        run: |
+#          cd ./src/main/resources
+#          touch ./application.yml
+#          echo "${{ secrets.TEST_APPLICATION }}" > ./application.yml
+#        shell: bash
 
       ## 2) 스프링 프로젝트 jar 파일 빌드
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew build
+#      - name: Build with Gradle
+#        run: ./gradlew build
 
         ## 3) 배포용 application.yml 파일 생성
       - name: Make prod application.yml
         run: |
           echo "${{ secrets.PROD_APPLICATION }}" > ./application.yml
         shell: bash
+
+      - name: Build with Gradle
+        run: ./gradlew build
 
         ## 4) jar 파일 생성
       - name: Make jar
