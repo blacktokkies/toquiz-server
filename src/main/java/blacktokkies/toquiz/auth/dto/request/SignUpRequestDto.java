@@ -1,5 +1,6 @@
 package blacktokkies.toquiz.auth.dto.request;
 
+import blacktokkies.toquiz.activeinfo.domain.ActiveInfo;
 import blacktokkies.toquiz.member.domain.Member;
 import blacktokkies.toquiz.member.domain.Provider;
 import jakarta.validation.constraints.Email;
@@ -29,12 +30,13 @@ public class SignUpRequestDto {
     @Length(min = 2, max = 20, message = NICKNAME_LENGTH_MESSAGE)
     private String nickname;
 
-    public Member toMember(){
+    public Member toMemberWith(ActiveInfo activeInfoId){
         return Member.builder()
             .email(email)
             .password(encryptPassword(password))
             .nickname(nickname)
             .provider(Provider.LOCAL)
+            .activeInfoId(activeInfoId.getId())
             .build();
     }
 }
