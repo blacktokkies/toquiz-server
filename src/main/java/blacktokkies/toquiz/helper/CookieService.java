@@ -40,18 +40,8 @@ public class CookieService {
     @Transactional
     public Cookie issueRefreshTokenCookie(String email){
         String refreshToken = jwtService.generateRefreshToken(email);
-
         refreshTokenService.save(email, refreshToken);
 
-        Cookie cookie = new Cookie("refresh_token", refreshToken);
-        cookie.setMaxAge(REFRESH_TOKEN_EXPIRATION);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-
-        return cookie;
-    }
-
-    public Cookie renewRefreshTokenCookie(String refreshToken){
         Cookie cookie = new Cookie("refresh_token", refreshToken);
         cookie.setMaxAge(REFRESH_TOKEN_EXPIRATION);
         cookie.setHttpOnly(true);

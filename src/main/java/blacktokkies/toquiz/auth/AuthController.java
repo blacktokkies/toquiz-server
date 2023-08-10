@@ -1,14 +1,11 @@
 package blacktokkies.toquiz.auth;
 
+import blacktokkies.toquiz.auth.dto.response.AuthenticateResponseDto;
 import blacktokkies.toquiz.common.success.SuccessMessage;
 import blacktokkies.toquiz.common.success.SuccessResponse;
 import blacktokkies.toquiz.auth.dto.request.LoginRequestDto;
 import blacktokkies.toquiz.auth.dto.request.SignUpRequestDto;
-import blacktokkies.toquiz.auth.dto.response.LoginResponseDto;
 import blacktokkies.toquiz.helper.CookieService;
-import blacktokkies.toquiz.helper.token.RefreshToken;
-import blacktokkies.toquiz.member.domain.Member;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,14 +26,14 @@ public class AuthController {
     }
 
     @PostMapping("/api/auth/login")
-    ResponseEntity<SuccessResponse<LoginResponseDto>> login(@RequestBody @Valid LoginRequestDto loginRequestDto,
-                                 HttpServletResponse response) {
-        LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
+    ResponseEntity<SuccessResponse<AuthenticateResponseDto>> login(@RequestBody @Valid LoginRequestDto loginRequestDto,
+                                                                   HttpServletResponse response) {
+        AuthenticateResponseDto loginResponse = authService.login(loginRequestDto);
 
-        response.addCookie(cookieService.issueActiveInfoIdCookie(loginResponseDto.getEmail()));
-        response.addCookie(cookieService.issueRefreshTokenCookie(loginResponseDto.getEmail()));
+        response.addCookie(cookieService.issueActiveInfoIdCookie(loginResponse.getEmail()));
+        response.addCookie(cookieService.issueRefreshTokenCookie(loginResponse.getEmail()));
 
-        return ResponseEntity.ok(new SuccessResponse<>(loginResponseDto, HttpStatus.OK.value()));
+        return ResponseEntity.ok(new SuccessResponse<>(loginResponse, HttpStatus.OK.value()));
     }
 
     @PostMapping("/api/auth/logout")
@@ -49,12 +46,12 @@ public class AuthController {
         return ResponseEntity.ok(SuccessMessage.LOG_OUT);
     }
 
-    @GetMapping("/api/auth/refresh")
-    ResponseEntity<SuccessResponse<String>> refresh(@CookieValue(name = "refresh_token", required = false) String refreshToken, HttpServletResponse response){
-        String accessToken = authService.refresh(refreshToken);
+    @PostMapping ("/api/auth/refresh")
+    ResponseEntity<SuccessResponse<AuthenticateResponseDto>> refresh(@CookieValue(name = "refresh_token", required = false) String refreshToken, HttpServletResponse response){
+        AuthenticateResponseDto refreshResponse = authService.refresh(refreshToken);
 
-        response.addCookie(cookieService.renewRefreshTokenCookie(refreshToken));
+        response.addCookie(cookieService.issueRefreshTokenCookie(refreshToken));
 
-        return ResponseEntity.ok(new SuccessResponse<>(accessToken, HttpStatus.OK.value()));
+        return ResponseEntity.ok(new SuccessResponse<>(refreshResponse, HttpStatus.OK.value()));
     }
 }
