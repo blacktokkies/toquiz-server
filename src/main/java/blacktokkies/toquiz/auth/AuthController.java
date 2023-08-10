@@ -50,7 +50,7 @@ public class AuthController {
     ResponseEntity<SuccessResponse<AuthenticateResponseDto>> refresh(@CookieValue(name = "refresh_token", required = false) String refreshToken, HttpServletResponse response){
         AuthenticateResponseDto refreshResponse = authService.refresh(refreshToken);
 
-        response.addCookie(cookieService.issueRefreshTokenCookie(refreshToken));
+        response.addCookie(cookieService.issueRefreshTokenCookie(refreshResponse.getEmail()));
 
         return ResponseEntity.ok(new SuccessResponse<>(refreshResponse, HttpStatus.OK.value()));
     }
