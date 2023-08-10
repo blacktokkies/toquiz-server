@@ -38,8 +38,7 @@ public class AuthService {
     }
 
     public AuthenticateResponseDto login(LoginRequestDto loginRequestDto){
-        Member member = memberRepository.findByEmail(loginRequestDto.getEmail())
-            .orElseThrow(() -> new RestApiException(NOT_EXIST_MEMBER));
+        Member member = getMemberByEmail(loginRequestDto.getEmail());
 
         checkCorrectPassword(loginRequestDto.getPassword(), member.getPassword());
         String accessToken = jwtService.generateAccessToken(member.getEmail());
@@ -53,15 +52,21 @@ public class AuthService {
     }
 
     public AuthenticateResponseDto refresh(String refreshToken) {
-        checkValidRefreshToken(refreshToken);
+        checkExistRefreshToken(refreshToken);
 
         String email = jwtService.getSubject(refreshToken);
-        Member member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new RestApiException(NOT_EXIST_MEMBER));
+        Member member = getMemberByEmail(email);
+
+        checkValidRefreshToken(refreshToken, member);
 
         String accessToken = jwtService.generateAccessToken(email);
 
         return AuthenticateResponseDto.toDto(member, accessToken);
+    }
+
+    private Member getMemberByEmail(String email) {
+        return memberRepository.findByEmail(email)
+            .orElseThrow(() -> new RestApiException(NOT_EXIST_MEMBER));
     }
 
     private void checkExistDuplicateEmail(String email){
@@ -82,9 +87,20 @@ public class AuthService {
         }
     }
 
-    private void checkValidRefreshToken(String refreshToken){
+    private void checkExistRefreshToken(String refreshToken){
         if(refreshToken == null){
             throw new RestApiException(INVALID_REFRESH_TOKEN);
         }
+    }
+
+    /**
+     * 예외처리
+     * (RefreshToken이 만료 됨, 저장된 사용자의 RefreshToken과 일치하지 않음)
+     */
+    private void checkValidRefreshToken(String refreshToken, Member member){
+        if(!jwtService.isTokenValid(refreshToken, member)){
+            throw new RestApiException(INVALID_REFRESH_TOKEN);
+        }
+        refreshTokenService.validate(refreshToken, member.getEmail());
     }
 }
