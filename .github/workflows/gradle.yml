@@ -80,7 +80,6 @@ jobs:
           port: ${{ secrets.AWS_SSH_PORT }}
           script: |
             sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_API_REPO }}:${{ secrets.DOCKER_TAG }}
             if [ "$(docker ps -aq -f name=${{ secrets.CONTAINER_NAME }})" ]; then
               docker stop ${{ secrets.CONTAINER_NAME }}
               docker rm ${{ secrets.CONTAINER_NAME }}
