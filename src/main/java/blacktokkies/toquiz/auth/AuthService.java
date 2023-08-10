@@ -2,11 +2,11 @@ package blacktokkies.toquiz.auth;
 
 import blacktokkies.toquiz.activeinfo.ActiveInfoRepository;
 import blacktokkies.toquiz.activeinfo.domain.ActiveInfo;
+import blacktokkies.toquiz.auth.dto.response.AuthenticateResponseDto;
 import blacktokkies.toquiz.common.error.exception.RestApiException;
 import blacktokkies.toquiz.helper.token.JwtService;
 import blacktokkies.toquiz.helper.PasswordEncryptor;
 import blacktokkies.toquiz.auth.dto.request.LoginRequestDto;
-import blacktokkies.toquiz.auth.dto.response.LoginResponseDto;
 import blacktokkies.toquiz.helper.token.RefreshTokenService;
 import blacktokkies.toquiz.member.MemberRepository;
 import blacktokkies.toquiz.member.domain.Member;
@@ -37,14 +37,14 @@ public class AuthService {
         memberRepository.save(member);
     }
 
-    public LoginResponseDto login(LoginRequestDto loginRequestDto){
+    public AuthenticateResponseDto login(LoginRequestDto loginRequestDto){
         Member member = memberRepository.findByEmail(loginRequestDto.getEmail())
             .orElseThrow(() -> new RestApiException(NOT_EXIST_MEMBER));
 
         checkCorrectPassword(loginRequestDto.getPassword(), member.getPassword());
         String accessToken = jwtService.generateAccessToken(member.getEmail());
 
-        return LoginResponseDto.toDto(member, accessToken);
+        return AuthenticateResponseDto.toDto(member, accessToken);
     }
 
     public void logout(){
@@ -52,15 +52,16 @@ public class AuthService {
         refreshTokenService.delete(member.getEmail());
     }
 
-    public String refresh(String refreshToken) {
-        System.out.println(refreshToken);
+    public AuthenticateResponseDto refresh(String refreshToken) {
         checkValidRefreshToken(refreshToken);
 
         String email = jwtService.getSubject(refreshToken);
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new RestApiException(NOT_EXIST_MEMBER));
 
-        return jwtService.refreshAccessToken(refreshToken, member);
+        String accessToken = jwtService.generateAccessToken(email);
+
+        return AuthenticateResponseDto.toDto(member, accessToken);
     }
 
     private void checkExistDuplicateEmail(String email){

@@ -1,21 +1,26 @@
 package blacktokkies.toquiz.helper.token;
 
 import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.redis.core.RedisHash;
-import org.springframework.data.redis.core.index.Indexed;
+import org.springframework.data.redis.core.TimeToLive;
 
-@RedisHash("email")
+import java.util.concurrent.TimeUnit;
+
+@RedisHash("refreshToken")
 @Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class RefreshToken {
     @Id
-    Long id;
-    @Indexed
-    String email;
-    String refreshToken;
+    private Long id;
+    private String email;
+    private String refreshToken;
 
-    public RefreshToken(String email, String refreshToken) {
-        this.email = email;
-        this.refreshToken = refreshToken;
-    }
+    @TimeToLive(unit = TimeUnit.MILLISECONDS)
+    private Integer expiration;
 }
