@@ -7,10 +7,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
+import org.springframework.data.redis.core.index.Indexed;
 
 import java.util.concurrent.TimeUnit;
 
-@RedisHash("refreshToken")
+@RedisHash(value = "refreshToken")
 @Getter
 @Builder
 @AllArgsConstructor
@@ -18,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class RefreshToken {
     @Id
     private Long id;
+    @Indexed
     private String email;
     private String refreshToken;
 
