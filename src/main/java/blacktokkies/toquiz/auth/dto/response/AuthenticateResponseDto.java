@@ -12,14 +12,14 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginResponseDto {
+public class AuthenticateResponseDto {
     private String email;
     private String nickname;
     private LocalDateTime createdAt;
     private String accessToken;
 
-    public static LoginResponseDto toDto(Member member, String accessToken){
-        return LoginResponseDto.builder()
+    public static AuthenticateResponseDto toDto(Member member, String accessToken){
+        return AuthenticateResponseDto.builder()
             .email(member.getEmail())
             .nickname(member.getNickname())
             .createdAt(member.getCreatedDate())
