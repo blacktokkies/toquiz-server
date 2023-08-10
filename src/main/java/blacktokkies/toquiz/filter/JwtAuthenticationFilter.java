@@ -1,5 +1,6 @@
 package blacktokkies.toquiz.filter;
 
+import blacktokkies.toquiz.common.error.exception.RestApiException;
 import blacktokkies.toquiz.helper.token.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -27,13 +28,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain
-    ) throws ServletException, IOException {
+    ) throws ServletException, IOException, RestApiException {
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String userEmail;
 
         // check jwt token
-        if(authHeader == null || !authHeader.startsWith("Bearer")){
+        if(authHeader == null || !authHeader.startsWith("Bearer") || authHeader.length() <= 7){
             filterChain.doFilter(request, response);
             return;
         }
