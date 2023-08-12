@@ -3,13 +3,13 @@ package blacktokkies.toquiz.domain.panel.domain;
 import blacktokkies.toquiz.global.common.domain.BaseTime;
 import blacktokkies.toquiz.domain.member.domain.Member;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Panel extends BaseTime {
     @Id @GeneratedValue
     @Column(name = "panel_id")
@@ -18,6 +18,8 @@ public class Panel extends BaseTime {
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
+
+    private String title;
 
     private String description;
 
