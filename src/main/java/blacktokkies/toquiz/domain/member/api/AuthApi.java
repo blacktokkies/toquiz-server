@@ -34,7 +34,7 @@ public class AuthApi {
         response.addCookie(cookieService.issueActiveInfoIdCookie(loginResponse.getEmail()));
         response.addCookie(cookieService.issueRefreshTokenCookie(loginResponse.getEmail()));
 
-        return ResponseEntity.ok(new SuccessResponse<>(loginResponse, HttpStatus.OK.value()));
+        return ResponseEntity.ok(new SuccessResponse<>(loginResponse));
     }
 
     @PostMapping("/api/auth/logout")
@@ -53,6 +53,6 @@ public class AuthApi {
 
         response.addCookie(cookieService.issueRefreshTokenCookie(refreshResponse.getEmail()));
 
-        return ResponseEntity.ok(new SuccessResponse<>(refreshResponse, HttpStatus.OK.value()));
+        return ResponseEntity.ok(new SuccessResponse<>(refreshResponse));
     }
 }
