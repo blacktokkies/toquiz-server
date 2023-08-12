@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CookieService {
     private final MemberRepository memberRepository;
-    private final RefreshTokenService refreshTokenService;
+    private final TokenService tokenService;
     @Value("${application.security.cookie.active-info-id.expiration}")
     private Integer ACTIVE_INFO_ID_EXPIRATION;
     @Value("${application.security.cookie.refresh-token.expiration}")
@@ -34,11 +34,10 @@ public class CookieService {
         return cookie;
     }
 
-    @Transactional
     public Cookie issueRefreshTokenCookie(String email){
-        RefreshToken refreshToken = refreshTokenService.generate(email);
+        String refreshToken = tokenService.generateRefreshToken(email);
 
-        Cookie cookie = new Cookie("refresh_token", refreshToken.getRefreshToken());
+        Cookie cookie = new Cookie("refresh_token", refreshToken);
         cookie.setMaxAge(REFRESH_TOKEN_EXPIRATION);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
