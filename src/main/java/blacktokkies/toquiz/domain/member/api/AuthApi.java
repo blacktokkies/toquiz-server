@@ -44,7 +44,7 @@ public class AuthApi {
         response.addCookie(cookieService.expireCookie("ActiveInfoId"));
         response.addCookie(cookieService.expireCookie("RefreshToken"));
 
-        return ResponseEntity.ok(SuccessMessage.LOG_OUT);
+        return ResponseEntity.ok(SuccessMessage.LOGOUT);
     }
 
     @PostMapping ("/api/auth/refresh")
