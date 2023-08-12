@@ -3,6 +3,7 @@ package blacktokkies.toquiz.helper;
 import blacktokkies.toquiz.common.error.errorcode.AuthErrorCode;
 import blacktokkies.toquiz.common.error.exception.RestApiException;
 import blacktokkies.toquiz.helper.token.JwtService;
+import blacktokkies.toquiz.helper.token.RefreshToken;
 import blacktokkies.toquiz.helper.token.RefreshTokenService;
 import blacktokkies.toquiz.member.MemberRepository;
 import blacktokkies.toquiz.member.domain.Member;
@@ -17,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class CookieService {
     private final MemberRepository memberRepository;
     private final RefreshTokenService refreshTokenService;
-    private final JwtService jwtService;
     @Value("${application.security.cookie.active-info-id.expiration}")
     private Integer ACTIVE_INFO_ID_EXPIRATION;
     @Value("${application.security.cookie.refresh-token.expiration}")
@@ -39,10 +39,9 @@ public class CookieService {
 
     @Transactional
     public Cookie issueRefreshTokenCookie(String email){
-        String refreshToken = jwtService.generateRefreshToken(email);
-        refreshTokenService.save(email, refreshToken);
+        RefreshToken refreshToken = refreshTokenService.generate(email);
 
-        Cookie cookie = new Cookie("refresh_token", refreshToken);
+        Cookie cookie = new Cookie("refresh_token", refreshToken.getRefreshToken());
         cookie.setMaxAge(REFRESH_TOKEN_EXPIRATION);
         cookie.setHttpOnly(true);
         cookie.setPath("/");

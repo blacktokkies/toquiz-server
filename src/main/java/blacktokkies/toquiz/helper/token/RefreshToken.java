@@ -25,4 +25,8 @@ public class RefreshToken {
 
     @TimeToLive(unit = TimeUnit.MILLISECONDS)
     private Integer expiration;
+
+    public void setExpiration(Integer expiration) {
+        this.expiration = expiration;
+    }
 }
