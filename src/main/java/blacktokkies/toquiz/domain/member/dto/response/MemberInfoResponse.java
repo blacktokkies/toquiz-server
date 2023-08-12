@@ -13,14 +13,14 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GetMyInfoResponse {
+public class MemberInfoResponse {
     private String email;
     private String nickname;
     private Provider provider;
     private LocalDateTime createdAt;
 
-    public static GetMyInfoResponse toDto(Member member){
-        return GetMyInfoResponse.builder()
+    public static MemberInfoResponse toDto(Member member){
+        return MemberInfoResponse.builder()
             .email(member.getEmail())
             .nickname(member.getNickname())
             .provider(member.getProvider())
