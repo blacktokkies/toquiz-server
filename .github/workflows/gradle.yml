@@ -80,8 +80,9 @@ jobs:
           port: ${{ secrets.AWS_SSH_PORT }}
           script: |
             sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            if [ "$(docker ps -aq -f name=${{ secrets.CONTAINER_NAME }})" ]; then
-              docker stop ${{ secrets.CONTAINER_NAME }}
-              docker rm ${{ secrets.CONTAINER_NAME }}
-            fi
+            
+            docker stop ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_API_REPO }}:${{ secrets.DOCKER_TAG }}
+            docker rm ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_API_REPO }}:${{ secrets.DOCKER_TAG }}
+            docker rmi ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_API_REPO }}:${{ secrets.DOCKER_TAG }}
+            
             sudo docker compose up -d
