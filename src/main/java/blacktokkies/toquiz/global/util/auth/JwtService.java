@@ -1,12 +1,9 @@
 package blacktokkies.toquiz.global.util.auth;
 
-import blacktokkies.toquiz.global.common.error.RestApiException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -17,8 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import static blacktokkies.toquiz.domain.member.exception.MemberErrorCode.INVALID_REFRESH_TOKEN;
-
+@Slf4j
 @Service
 public class JwtService {
     @Value("${application.security.jwt.secret-key}")
@@ -39,9 +35,11 @@ public class JwtService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        }catch(SignatureException e){
-            throw new RestApiException(INVALID_REFRESH_TOKEN);
         }
+        catch (Exception e){
+            jwtExceptionHandler(e);
+        }
+        return null;
     }
 
     private SecretKey getSignInKey() {
@@ -61,14 +59,19 @@ public class JwtService {
         Map<String, Object> extraClaims,
         String subject,
         int tokenExpiration
-    ){
-        return Jwts.builder()
-            .setClaims(extraClaims)
-            .setSubject(subject)
-            .setIssuedAt(new Date(System.currentTimeMillis()))
-            .setExpiration(new Date(System.currentTimeMillis() + tokenExpiration))
-            .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-            .compact();
+    ) {
+        try {
+            return Jwts.builder()
+                .setClaims(extraClaims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + tokenExpiration))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+        }catch (Exception e){
+            jwtExceptionHandler(e);
+        }
+        return null;
     }
 
     private Date extractExpiration(String token){
@@ -82,5 +85,24 @@ public class JwtService {
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    }
+
+    private void jwtExceptionHandler(Exception e) {
+        if(e instanceof SecurityException){
+            throw new JwtException("잘못된 JWT 시그니처");
+        }
+        if(e instanceof MalformedJwtException){
+            throw new JwtException("유효하지 않은 JWT 토큰");
+        }
+        if(e instanceof ExpiredJwtException){
+            throw new JwtException("만료된 JWT 토큰");
+        }
+        if(e instanceof UnsupportedJwtException){
+            throw new JwtException("지원되지 않는 JWT 토큰");
+        }
+        if(e instanceof IllegalArgumentException){
+            throw new JwtException("JWT token compact of handler are invalid");
+        }
+        throw new JwtException("JWT 체크하지 못한 오류");
     }
 }
