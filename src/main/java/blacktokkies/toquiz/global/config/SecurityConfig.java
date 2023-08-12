@@ -1,6 +1,9 @@
-package blacktokkies.toquiz.global.config.security;
+package blacktokkies.toquiz.global.config;
 
-import blacktokkies.toquiz.global.common.filter.JwtAuthenticationFilter;
+import blacktokkies.toquiz.global.config.security.CustomAccessDeniedHandler;
+import blacktokkies.toquiz.global.config.security.CustomAuthenticationEntryPoint;
+import blacktokkies.toquiz.global.config.security.ExceptionHandlerFilter;
+import blacktokkies.toquiz.global.config.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +24,9 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final ExceptionHandlerFilter exceptionHandlerFilter;
     private final AuthenticationProvider authenticationProvider;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
@@ -52,19 +57,19 @@ public class SecurityConfig {
                 "api/auth/signup",
                 "api/auth/login",
                 "api/auth/refresh"
-            )
-            .permitAll()
-            .anyRequest()
-            .authenticated();
+            ).permitAll()
+            .anyRequest().authenticated();
 
         http.exceptionHandling()
+            .accessDeniedHandler(customAccessDeniedHandler)
             .authenticationEntryPoint(customAuthenticationEntryPoint);
 
         http.sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .authenticationProvider(authenticationProvider)
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(exceptionHandlerFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }
