@@ -8,9 +8,8 @@ import blacktokkies.toquiz.domain.member.dto.request.LoginRequest;
 import blacktokkies.toquiz.domain.member.dto.request.SignUpRequest;
 import blacktokkies.toquiz.domain.member.dao.MemberRepository;
 import blacktokkies.toquiz.domain.member.domain.Member;
-import blacktokkies.toquiz.global.util.auth.JwtService;
 import blacktokkies.toquiz.global.util.auth.PasswordEncryptor;
-import blacktokkies.toquiz.global.util.auth.RefreshTokenService;
+import blacktokkies.toquiz.global.util.auth.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -24,8 +23,7 @@ import static blacktokkies.toquiz.domain.member.exception.MemberErrorCode.*;
 public class AuthService {
     private final MemberRepository memberRepository;
     private final ActiveInfoRepository activeInfoRepository;
-    private final RefreshTokenService refreshTokenService;
-    private final JwtService jwtService;
+    private final TokenService tokenService;
     @Transactional
     public void signUp(SignUpRequest signUpRequest){
         checkExistDuplicateEmail(signUpRequest.getEmail());
@@ -41,25 +39,25 @@ public class AuthService {
         Member member = getMemberByEmail(loginRequest.getEmail());
 
         checkCorrectPassword(loginRequest.getPassword(), member.getPassword());
-        String accessToken = jwtService.generateAccessToken(member.getEmail());
+        String accessToken = tokenService.generateAccessToken(member.getEmail());
 
         return AuthenticateResponse.toDto(member, accessToken);
     }
 
     public void logout(){
         Member member = (Member) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        refreshTokenService.delete(member.getEmail());
+        tokenService.deleteRefreshToken(member.getEmail());
     }
 
     public AuthenticateResponse refresh(String refreshToken) {
         checkExistRefreshToken(refreshToken);
 
-        String email = jwtService.getSubject(refreshToken);
+        String email = tokenService.getEmail(refreshToken);
         Member member = getMemberByEmail(email);
 
         checkValidRefreshToken(refreshToken, member);
 
-        String accessToken = jwtService.generateAccessToken(email);
+        String accessToken = (email);
 
         return AuthenticateResponse.toDto(member, accessToken);
     }
@@ -83,7 +81,7 @@ public class AuthService {
 
     private void checkCorrectPassword(String inputPassword, String memberPassword){
         if(!PasswordEncryptor.matchPassowrd(inputPassword, memberPassword)){
-            throw new RestApiException(INVALID_PASSWORD);
+            throw new RestApiException(NOT_MATCH_PASSWORD);
         }
     }
 
@@ -98,9 +96,9 @@ public class AuthService {
      * (RefreshToken이 만료 됨, 저장된 사용자의 RefreshToken과 일치하지 않음)
      */
     private void checkValidRefreshToken(String refreshToken, Member member){
-        if(!jwtService.isTokenValid(refreshToken, member)){
+        if(!tokenService.isTokenValid(refreshToken, member)){
             throw new RestApiException(INVALID_REFRESH_TOKEN);
         }
-        refreshTokenService.validate(refreshToken, member.getEmail());
+        tokenService.validateRefreshToken(refreshToken, member.getEmail());
     }
 }

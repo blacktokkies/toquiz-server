@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RefreshToken {
+public class RefreshTokenDetail {
     @Id
     private Long id;
     @Indexed

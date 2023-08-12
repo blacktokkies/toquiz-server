@@ -23,10 +23,6 @@ import static blacktokkies.toquiz.domain.member.exception.MemberErrorCode.INVALI
 public class JwtService {
     @Value("${application.security.jwt.secret-key}")
     private String SECRET_KEY;
-    @Value("${application.security.jwt.access-token.expiration}")
-    private Integer ACCESS_TOKEN_EXPIRATION;
-    @Value("${application.security.jwt.refresh-token.expiration}")
-    private Integer REFRESH_TOKEN_EXPIRATION;
     public String extractUsername(String token) {
         return extractClaims(token, Claims::getSubject);
     }
@@ -57,12 +53,8 @@ public class JwtService {
         return extractClaims(token, Claims::getSubject);
     }
 
-    public String generateRefreshToken(String subject){
-        return generateToken(new HashMap<>(), subject, REFRESH_TOKEN_EXPIRATION);
-    }
-
-    public String generateAccessToken(String subject){
-        return generateToken(new HashMap<>(), subject, ACCESS_TOKEN_EXPIRATION);
+    public String generateToken(String subject, int tokenExpiration){
+        return generateToken(new HashMap<>(), subject, tokenExpiration);
     }
 
     public String generateToken(
