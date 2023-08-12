@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 import static blacktokkies.toquiz.domain.member.exception.MemberErrorCode.INVALID_ACCESS_TOKEN;
-import static blacktokkies.toquiz.global.common.error.errorcode.CommonErrorCode.RESOURCE_NOT_FOUND;
+import static blacktokkies.toquiz.global.common.error.errorcode.CommonErrorCode.HANDLER_NOT_FOUND;
 import static blacktokkies.toquiz.global.config.security.SendErrorResponse.sendErrorResponse;
 
 @Slf4j
@@ -23,7 +23,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         if(!endpointChecker.isEndpointExist(request)){
-            sendErrorResponse(response, RESOURCE_NOT_FOUND);
+            sendErrorResponse(response, HANDLER_NOT_FOUND);
             return;
         }
         sendErrorResponse(response, INVALID_ACCESS_TOKEN);
