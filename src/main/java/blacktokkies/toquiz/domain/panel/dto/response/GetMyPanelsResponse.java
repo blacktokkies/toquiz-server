@@ -16,7 +16,7 @@ public class GetMyPanelsResponse {
     private List<PanelResponse> panels;
     private int nextPage;
 
-    public static GetMyPanelsResponse dto(List<PanelResponse> panels, Pageable pageable){
+    public static GetMyPanelsResponse toDto(List<PanelResponse> panels, Pageable pageable){
         return GetMyPanelsResponse.builder()
             .panels(panels)
             .nextPage(pageable.getPageNumber() + 1)
