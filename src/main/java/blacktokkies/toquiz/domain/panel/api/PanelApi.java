@@ -20,10 +20,10 @@ import java.util.List;
 public class PanelApi {
     private final PanelService panelService;
     @PostMapping("api/panel")
-    public ResponseEntity<SuccessResponse<PanelResponse>> create(
+    public ResponseEntity<SuccessResponse<PanelResponse>> createPanel(
         @RequestBody  @Valid CreatePanelRequest createPanelRequest
     ){
-        PanelResponse response = panelService.create(createPanelRequest);
+        PanelResponse response = panelService.createPanel(createPanelRequest);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }

@@ -25,7 +25,7 @@ public class PanelService {
     private final PanelRepository panelRepository;
 
     @Transactional
-    public PanelResponse create(CreatePanelRequest createPanelRequest) {
+    public PanelResponse createPanel(CreatePanelRequest createPanelRequest) {
         Member member = getMember();
         Panel panel = panelRepository.save(createPanelRequest.toPanelWith(member));
 
