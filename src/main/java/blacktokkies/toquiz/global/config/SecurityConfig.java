@@ -58,6 +58,9 @@ public class SecurityConfig {
                 "api/auth/login",
                 "api/auth/refresh"
             ).permitAll()
+            .requestMatchers(
+                "api/panels/{panelId}/question"
+            ).permitAll()
             .anyRequest().authenticated();
 
         http.exceptionHandling()
