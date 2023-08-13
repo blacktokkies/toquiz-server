@@ -8,11 +8,15 @@ import blacktokkies.toquiz.domain.panel.dto.response.CreatePanelResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PanelService {
     private final PanelRepository panelRepository;
+
+    @Transactional
     public CreatePanelResponse create(CreatePanelRequest createPanelRequest) {
         Member member = (Member) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Panel panel = panelRepository.save(createPanelRequest.toPanelWith(member));
