@@ -2,6 +2,7 @@ package blacktokkies.toquiz.domain.panel.api;
 
 import blacktokkies.toquiz.domain.panel.application.PanelService;
 import blacktokkies.toquiz.domain.panel.dto.request.CreatePanelRequest;
+import blacktokkies.toquiz.domain.panel.dto.response.GetMyPanelsResponse;
 import blacktokkies.toquiz.domain.panel.dto.response.PanelResponse;
 import blacktokkies.toquiz.global.common.response.SuccessResponse;
 import jakarta.validation.Valid;
@@ -21,17 +22,21 @@ import java.util.List;
 public class PanelApi {
     private final PanelService panelService;
     @PostMapping("api/panel")
-    ResponseEntity<SuccessResponse<PanelResponse>> create(@RequestBody  @Valid CreatePanelRequest createPanelRequest){
+    public ResponseEntity<SuccessResponse<PanelResponse>> create(
+        @RequestBody  @Valid CreatePanelRequest createPanelRequest
+    ){
         PanelResponse response = panelService.create(createPanelRequest);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
 
     @GetMapping("api/panels")
-    public ResponseEntity<SuccessResponse<List<PanelResponse>>> getMyPanels(
-        @PageableDefault(size = 10, sort = "updatedDate") Pageable pageable){
+    public ResponseEntity<SuccessResponse<GetMyPanelsResponse>> getMyPanels(
+        @PageableDefault(size = 10, sort = "updatedDate") Pageable pageable
+    ){
         List<PanelResponse> panels = panelService.getMyPanels(pageable);
+        GetMyPanelsResponse response = GetMyPanelsResponse.dto(panels, pageable);
 
-        return ResponseEntity.ok(new SuccessResponse<>(panels));
+        return ResponseEntity.ok(new SuccessResponse<>(response));
     }
 }
