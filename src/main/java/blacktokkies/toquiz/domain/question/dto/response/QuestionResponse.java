@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateQuestionResponse {
+public class QuestionResponse {
     private Long questionId;
     private String content;
     private long answerNum;
@@ -21,8 +21,8 @@ public class CreateQuestionResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static CreateQuestionResponse toDto(Question question){
-        return CreateQuestionResponse.builder()
+    public static QuestionResponse toDto(Question question){
+        return QuestionResponse.builder()
             .questionId(question.getId())
             .content(question.getContent())
             .answerNum(0)
