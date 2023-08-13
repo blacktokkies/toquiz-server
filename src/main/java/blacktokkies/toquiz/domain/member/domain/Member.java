@@ -1,11 +1,14 @@
 package blacktokkies.toquiz.domain.member.domain;
 
+import blacktokkies.toquiz.domain.panel.domain.Panel;
 import blacktokkies.toquiz.global.common.domain.BaseTime;
 import blacktokkies.toquiz.domain.model.Provider;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -36,6 +39,9 @@ public class Member extends BaseTime implements UserDetails{
 
     @Column(nullable = false)
     private String activeInfoId;
+
+    @OneToMany(mappedBy = "member")
+    private List<Panel> panels = new ArrayList<>();
 
     @Builder
     public Member(String email, String password, String nickname, Provider provider, String activeInfoId) {
