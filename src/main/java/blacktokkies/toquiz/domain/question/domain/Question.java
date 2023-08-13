@@ -3,13 +3,13 @@ package blacktokkies.toquiz.domain.question.domain;
 import blacktokkies.toquiz.global.common.domain.BaseTime;
 import blacktokkies.toquiz.domain.panel.domain.Panel;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Question extends BaseTime {
     @Id @GeneratedValue
     @Column(name = "question_id")
@@ -30,4 +30,12 @@ public class Question extends BaseTime {
 
     @Column(nullable = false)
     private String activeInfoId;
+
+    public Question(String content, Panel panel, String activeInfoId) {
+        this.content = content;
+        this.answerNum = 0;
+        this.likeNum = 0;
+        this.panel = panel;
+        this.activeInfoId = activeInfoId;
+    }
 }

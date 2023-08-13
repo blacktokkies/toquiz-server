@@ -1,9 +1,13 @@
 package blacktokkies.toquiz.domain.panel.domain;
 
+import blacktokkies.toquiz.domain.question.domain.Question;
 import blacktokkies.toquiz.global.common.domain.BaseTime;
 import blacktokkies.toquiz.domain.member.domain.Member;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -28,4 +32,7 @@ public class Panel extends BaseTime {
 
     @Column(nullable = false)
     private long scarpNum;
+
+    @OneToMany(mappedBy = "panel")
+    private List<Question> questions = new ArrayList<>();
 }
