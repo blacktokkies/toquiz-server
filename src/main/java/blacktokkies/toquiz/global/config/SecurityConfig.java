@@ -59,7 +59,8 @@ public class SecurityConfig {
                 "api/auth/refresh"
             ).permitAll()
             .requestMatchers(
-                "api/panels/{panelId}/question"
+                "api/panels/{panelId}/question",
+                "api/panels/{panelId}/questions"
             ).permitAll()
             .anyRequest().authenticated();
 
