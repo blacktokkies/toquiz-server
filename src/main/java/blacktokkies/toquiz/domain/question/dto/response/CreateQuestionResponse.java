@@ -17,6 +17,7 @@ public class CreateQuestionResponse {
     private String content;
     private long answerNum;
     private long likeNum;
+    private String activeInfoId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -26,6 +27,7 @@ public class CreateQuestionResponse {
             .content(question.getContent())
             .answerNum(0)
             .likeNum(0)
+            .activeInfoId(question.getActiveInfoId())
             .createdAt(question.getCreatedDate())
             .updatedAt(question.getUpdatedDate())
             .build();
