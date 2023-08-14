@@ -41,7 +41,7 @@ public class PanelApi {
     }
 
     @DeleteMapping("api/panels/{panelId}")
-    public ResponseEntity<SuccessMessage> deletePanel(@PathVariable("panelId") Long panelId){
+    public ResponseEntity<SuccessMessage> deletePanel(@PathVariable Long panelId){
         panelService.deletePanel(panelId);
 
         return ResponseEntity.ok(SuccessMessage.PANEL_DELETE);
@@ -50,7 +50,7 @@ public class PanelApi {
     @PatchMapping("api/panels/{panelId}")
     public ResponseEntity<SuccessResponse<PanelResponse>> updatePanel(
         @RequestBody @Valid UpdatePanelRequest request,
-        @PathVariable("panelId") Long panelId
+        @PathVariable Long panelId
         ){
         PanelResponse response = panelService.updatePanel(request, panelId);
 
