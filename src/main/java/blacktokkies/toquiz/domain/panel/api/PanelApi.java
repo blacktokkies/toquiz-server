@@ -9,6 +9,7 @@ import blacktokkies.toquiz.global.common.response.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,7 @@ public class PanelApi {
 
     @GetMapping("api/panels")
     public ResponseEntity<SuccessResponse<GetMyPanelsResponse>> getMyPanels(
-        @PageableDefault(size = 10, sort = "updatedDate") Pageable pageable
+        @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable
     ){
         List<PanelResponse> panelResponses = panelService.getMyPanels(pageable);
         GetMyPanelsResponse response = GetMyPanelsResponse.toDto(panelResponses, pageable);
