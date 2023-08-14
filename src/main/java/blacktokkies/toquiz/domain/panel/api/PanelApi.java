@@ -56,4 +56,11 @@ public class PanelApi {
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
+
+    @GetMapping("api/panels/{panelId}")
+    public ResponseEntity<SuccessResponse<PanelResponse>> getPanelInfo(@PathVariable Long panelId){
+        PanelResponse response = PanelResponse.toDto(panelService.getPanel(panelId));
+
+        return ResponseEntity.ok(new SuccessResponse<>(response));
+    }
 }
