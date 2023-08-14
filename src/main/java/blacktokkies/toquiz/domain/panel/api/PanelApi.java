@@ -2,6 +2,7 @@ package blacktokkies.toquiz.domain.panel.api;
 
 import blacktokkies.toquiz.domain.panel.application.PanelService;
 import blacktokkies.toquiz.domain.panel.dto.request.CreatePanelRequest;
+import blacktokkies.toquiz.domain.panel.dto.request.UpdatePanelRequest;
 import blacktokkies.toquiz.domain.panel.dto.response.GetMyPanelsResponse;
 import blacktokkies.toquiz.domain.panel.dto.response.PanelResponse;
 import blacktokkies.toquiz.global.common.response.SuccessMessage;
@@ -44,5 +45,15 @@ public class PanelApi {
         panelService.deletePanel(panelId);
 
         return ResponseEntity.ok(SuccessMessage.PANEL_DELETE);
+    }
+
+    @PatchMapping("api/panels/{panelId}")
+    public ResponseEntity<SuccessResponse<PanelResponse>> updatePanel(
+        @RequestBody @Valid UpdatePanelRequest request,
+        @PathVariable("panelId") Long panelId
+        ){
+        PanelResponse response = panelService.updatePanel(request, panelId);
+
+        return ResponseEntity.ok(new SuccessResponse<>(response));
     }
 }
