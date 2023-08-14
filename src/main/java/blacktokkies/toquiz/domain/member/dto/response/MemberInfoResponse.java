@@ -18,6 +18,7 @@ public class MemberInfoResponse {
     private String nickname;
     private Provider provider;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public static MemberInfoResponse toDto(Member member){
         return MemberInfoResponse.builder()
@@ -25,6 +26,7 @@ public class MemberInfoResponse {
             .nickname(member.getNickname())
             .provider(member.getProvider())
             .createdAt(member.getCreatedDate())
+            .updatedAt(member.getUpdatedDate())
             .build();
     }
 }
