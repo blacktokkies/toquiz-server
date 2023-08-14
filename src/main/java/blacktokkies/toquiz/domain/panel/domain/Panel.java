@@ -35,4 +35,9 @@ public class Panel extends BaseTime {
 
     @OneToMany(mappedBy = "panel")
     private List<Question> questions = new ArrayList<>();
+
+    public void updatePanelInfo(String title, String description){
+        this.title = title;
+        this.description = description;
+    }
 }
