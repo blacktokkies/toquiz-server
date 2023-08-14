@@ -68,7 +68,7 @@ public class PanelService {
         }
     }
 
-    private Panel getPanel(Long panelId){
+    public Panel getPanel(Long panelId){
         return panelRepository.findById(panelId)
             .orElseThrow(() -> new RestApiException(NOT_EXIST_PANEL));
     }
