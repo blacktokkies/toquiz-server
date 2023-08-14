@@ -45,8 +45,15 @@ public class AuthService {
     }
 
     public void logout(){
-        Member member = (Member) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Member member = getMember();
         tokenService.deleteRefreshToken(member.getEmail());
+    }
+
+    @Transactional
+    public void resign(String password){
+        Member member = getMember();
+        checkCorrectPassword(password, member.getPassword());
+        memberRepository.delete(member);
     }
 
     public AuthenticateResponse refresh(String refreshToken) {
@@ -60,6 +67,10 @@ public class AuthService {
         String accessToken = (email);
 
         return AuthenticateResponse.toDto(member, accessToken);
+    }
+
+    private Member getMember(){
+        return (Member) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 
     private Member getMemberByEmail(String email) {

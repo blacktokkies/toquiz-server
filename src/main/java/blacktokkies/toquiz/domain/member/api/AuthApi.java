@@ -1,5 +1,6 @@
 package blacktokkies.toquiz.domain.member.api;
 
+import blacktokkies.toquiz.domain.member.dto.request.ResignRequest;
 import blacktokkies.toquiz.domain.member.dto.response.AuthenticateResponse;
 import blacktokkies.toquiz.global.common.response.SuccessMessage;
 import blacktokkies.toquiz.global.common.response.SuccessResponse;
@@ -10,7 +11,6 @@ import blacktokkies.toquiz.global.util.auth.CookieService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,6 +45,15 @@ public class AuthApi {
         response.addCookie(cookieService.expireCookie("RefreshToken"));
 
         return ResponseEntity.ok(SuccessMessage.LOGOUT);
+    }
+
+    @PostMapping("api/auth/resign")
+    public ResponseEntity<SuccessMessage> deleteMyInfo(
+        @RequestBody @Valid ResignRequest request
+        ){
+        authService.resign(request.getPassword());
+
+        return ResponseEntity.ok(SuccessMessage.RESIGN);
     }
 
     @PostMapping ("/api/auth/refresh")

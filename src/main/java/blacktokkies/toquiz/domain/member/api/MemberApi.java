@@ -22,13 +22,6 @@ public class MemberApi {
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
 
-    @DeleteMapping("api/members/me")
-    public ResponseEntity<SuccessMessage> deleteMyInfo(){
-        memberService.deleteMyInfo();
-
-        return ResponseEntity.ok(SuccessMessage.RESIGN);
-    }
-
     @PatchMapping("api/members/me")
     public ResponseEntity<SuccessResponse<MemberInfoResponse>> updateMyInfo(
         @RequestBody @Valid UpdateMyInfoRequest request
