@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static blacktokkies.toquiz.global.util.auth.PasswordEncryptor.encryptPassword;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -50,6 +52,11 @@ public class Member extends BaseTime implements UserDetails{
         this.nickname = nickname;
         this.provider = provider;
         this.activeInfoId = activeInfoId;
+    }
+
+    public void updateMemberInfo(String password, String nickname){
+        this.password = encryptPassword(password);
+        this.nickname = nickname;
     }
 
     @Override
