@@ -19,11 +19,6 @@ public class MemberService {
     }
 
     @Transactional
-    public void deleteMyInfo(){
-        memberRepository.delete(getMember());
-    }
-
-    @Transactional
     public MemberInfoResponse updateMyInfo(UpdateMyInfoRequest updateMyInfoRequest) {
         Member member = getMember();
         member.updateMemberInfo(
