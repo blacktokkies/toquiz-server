@@ -7,6 +7,7 @@ import blacktokkies.toquiz.global.config.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -53,14 +54,20 @@ public class SecurityConfig {
             .configurationSource(corsConfigurationSource());
 
         http.authorizeHttpRequests()
-            .requestMatchers(
+            .requestMatchers(  // 로그인 관련 URL
+                HttpMethod.POST,
                 "api/auth/signup",
                 "api/auth/login",
                 "api/auth/refresh"
             ).permitAll()
-            .requestMatchers(
-                "api/panels/{panelId}/question",
+            .requestMatchers( // GET 메서드
+                HttpMethod.GET,
+                "api/panels/{panelId}",
                 "api/panels/{panelId}/questions"
+            ).permitAll()
+            .requestMatchers( // POST 메서드
+                HttpMethod.POST,
+                "api/panels/{panelId}/question"
             ).permitAll()
             .anyRequest().authenticated();
 
@@ -75,6 +82,6 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(exceptionHandlerFilter, JwtAuthenticationFilter.class);
 
-        return http.build();
+        return http.getOrBuild();
     }
 }
