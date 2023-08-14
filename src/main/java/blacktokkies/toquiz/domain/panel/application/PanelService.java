@@ -4,6 +4,7 @@ import blacktokkies.toquiz.domain.member.domain.Member;
 import blacktokkies.toquiz.domain.panel.dao.PanelRepository;
 import blacktokkies.toquiz.domain.panel.domain.Panel;
 import blacktokkies.toquiz.domain.panel.dto.request.CreatePanelRequest;
+import blacktokkies.toquiz.domain.panel.dto.request.UpdatePanelRequest;
 import blacktokkies.toquiz.domain.panel.dto.response.PanelResponse;
 import blacktokkies.toquiz.global.common.error.RestApiException;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,18 @@ public class PanelService {
         checkIsAuthorizedToDelete(panelId);
 
         panelRepository.deleteById(panelId);
+    }
+
+    @Transactional
+    public PanelResponse updatePanel(UpdatePanelRequest updatePanelRequest, Long panelId) {
+        Panel panel = getPanel(panelId);
+        panel.updatePanelInfo(
+            updatePanelRequest.getTitle(),
+            updatePanelRequest.getDescription()
+        );
+        Panel updatedPanel = panelRepository.save(panel);
+
+        return PanelResponse.toDto(updatedPanel);
     }
 
     private void checkIsAuthorizedToDelete(Long panelId) {
