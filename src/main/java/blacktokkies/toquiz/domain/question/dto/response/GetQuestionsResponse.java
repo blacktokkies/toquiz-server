@@ -16,10 +16,10 @@ public class GetQuestionsResponse {
     private List<QuestionResponse> questions;
     private int nextPage;
 
-    public static GetQuestionsResponse toDto(List<QuestionResponse> questions, Pageable pageable){
+    public static GetQuestionsResponse toDto(List<QuestionResponse> questions, int nextPage){
         return GetQuestionsResponse.builder()
             .questions(questions)
-            .nextPage(pageable.getPageNumber() + 1)
+            .nextPage(nextPage)
             .build();
     }
 }

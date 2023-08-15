@@ -5,9 +5,11 @@ import blacktokkies.toquiz.domain.panel.domain.Panel;
 import blacktokkies.toquiz.domain.question.dao.QuestionRepository;
 import blacktokkies.toquiz.domain.question.domain.Question;
 import blacktokkies.toquiz.domain.question.dto.request.CreateQuestionRequest;
+import blacktokkies.toquiz.domain.question.dto.response.GetQuestionsResponse;
 import blacktokkies.toquiz.domain.question.dto.response.QuestionResponse;
 import blacktokkies.toquiz.global.common.error.RestApiException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,9 +41,11 @@ public class QuestionService {
             () -> new RestApiException(NOT_EXIST_PANEL));
     }
 
-    public List<QuestionResponse> getQuestions(Long panelId, Pageable pageable) {
-        List<Question> questions = questionRepository.findAllByPanel(getPanel(panelId), pageable);
+    public GetQuestionsResponse getQuestions(Long panelId, Pageable pageable) {
+        Page<Question> questions = questionRepository.findAllByPanel(getPanel(panelId), pageable);
+        List<QuestionResponse> questionResponses = questions.stream().map(QuestionResponse::toDto).toList();
+        int nextPage = questions.hasNext() ? pageable.getPageNumber() + 1 : -1;
 
-        return questions.stream().map(QuestionResponse::toDto).toList();
+        return GetQuestionsResponse.toDto(questionResponses, nextPage);
     }
 }
