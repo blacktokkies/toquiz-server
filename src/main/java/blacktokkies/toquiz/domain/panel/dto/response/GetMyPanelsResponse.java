@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -16,10 +15,10 @@ public class GetMyPanelsResponse {
     private List<PanelResponse> panels;
     private int nextPage;
 
-    public static GetMyPanelsResponse toDto(List<PanelResponse> panels, Pageable pageable){
+    public static GetMyPanelsResponse toDto(List<PanelResponse> panels, int nextPage){
         return GetMyPanelsResponse.builder()
             .panels(panels)
-            .nextPage(pageable.getPageNumber() + 1)
+            .nextPage(nextPage)
             .build();
     }
 }
