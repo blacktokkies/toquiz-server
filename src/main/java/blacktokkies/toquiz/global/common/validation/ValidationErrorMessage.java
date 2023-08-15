@@ -23,4 +23,7 @@ public class ValidationErrorMessage {
 
     public static final String QUESTION_CONTENT_EMPTY_MESSAGE = "질문 내용을 입력해주세요.";
     public static final String QUESTION_CONTENT_LENGTH_MESSAGE = "질문은 200자 이하 이어야 합니다.";
+
+    public static final String ANSWER_CONTENT_EMPTY_MESSAGE = "답변 내용을 입력해주세요.";
+    public static final String ANSWER_CONTENT_LENGTH_MESSAGE = "답변은 200자 이하 이어야 합니다.";
 }
