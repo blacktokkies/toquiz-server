@@ -3,13 +3,13 @@ package blacktokkies.toquiz.domain.answer.domain;
 import blacktokkies.toquiz.global.common.domain.BaseTime;
 import blacktokkies.toquiz.domain.question.domain.Question;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Answer extends BaseTime {
     @Id @GeneratedValue
     @Column(name = "answer_id")
