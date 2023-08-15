@@ -2,7 +2,6 @@ package blacktokkies.toquiz.domain.question.api;
 
 import blacktokkies.toquiz.domain.question.application.QuestionService;
 import blacktokkies.toquiz.domain.question.dto.request.CreateQuestionRequest;
-import blacktokkies.toquiz.domain.question.dto.response.GetQuestionResponse;
 import blacktokkies.toquiz.domain.question.dto.response.GetQuestionsResponse;
 import blacktokkies.toquiz.domain.question.dto.response.QuestionResponse;
 import blacktokkies.toquiz.global.common.response.SuccessResponse;
@@ -13,8 +12,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
