@@ -2,6 +2,7 @@ package blacktokkies.toquiz.domain.question.api;
 
 import blacktokkies.toquiz.domain.question.application.QuestionService;
 import blacktokkies.toquiz.domain.question.dto.request.CreateQuestionRequest;
+import blacktokkies.toquiz.domain.question.dto.response.GetQuestionResponse;
 import blacktokkies.toquiz.domain.question.dto.response.GetQuestionsResponse;
 import blacktokkies.toquiz.domain.question.dto.response.QuestionResponse;
 import blacktokkies.toquiz.global.common.response.SuccessResponse;
@@ -35,8 +36,7 @@ public class QuestionApi {
         @PageableDefault(size = 30, sort = {"likeNum", "createdDate"}, direction = Sort.Direction.DESC) Pageable pageable,
         @PathVariable Long panelId
     ){
-        List<QuestionResponse> questionResponses = questionService.getQuestions(panelId, pageable);
-        GetQuestionsResponse response = GetQuestionsResponse.toDto(questionResponses, pageable);
+        GetQuestionsResponse response = questionService.getQuestions(panelId, pageable);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
