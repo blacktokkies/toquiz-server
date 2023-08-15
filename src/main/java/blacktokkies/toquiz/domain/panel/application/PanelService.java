@@ -5,9 +5,11 @@ import blacktokkies.toquiz.domain.panel.dao.PanelRepository;
 import blacktokkies.toquiz.domain.panel.domain.Panel;
 import blacktokkies.toquiz.domain.panel.dto.request.CreatePanelRequest;
 import blacktokkies.toquiz.domain.panel.dto.request.UpdatePanelRequest;
+import blacktokkies.toquiz.domain.panel.dto.response.GetMyPanelsResponse;
 import blacktokkies.toquiz.domain.panel.dto.response.PanelResponse;
 import blacktokkies.toquiz.global.common.error.RestApiException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -33,11 +35,13 @@ public class PanelService {
         return PanelResponse.toDto(panel);
     }
 
-    public List<PanelResponse> getMyPanels(Pageable pageable){
+    public GetMyPanelsResponse getMyPanels(Pageable pageable){
         Member member = getMember();
-        List<Panel> panels = panelRepository.findAllByMember(member, pageable);
+        Page<Panel> panels = panelRepository.findAllByMember(member, pageable);
+        List<PanelResponse> panelResponses =  panels.stream().map(PanelResponse::toDto).toList();
+        int nextPage = panels.hasNext() ? pageable.getPageNumber() + 1 : -1;
 
-        return panels.stream().map(PanelResponse::toDto).toList();
+        return GetMyPanelsResponse.toDto(panelResponses, nextPage);
     }
 
     @Transactional

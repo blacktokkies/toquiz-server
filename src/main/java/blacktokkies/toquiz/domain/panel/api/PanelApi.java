@@ -34,8 +34,7 @@ public class PanelApi {
     public ResponseEntity<SuccessResponse<GetMyPanelsResponse>> getMyPanels(
         @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable
     ){
-        List<PanelResponse> panelResponses = panelService.getMyPanels(pageable);
-        GetMyPanelsResponse response = GetMyPanelsResponse.toDto(panelResponses, pageable);
+        GetMyPanelsResponse response = panelService.getMyPanels(pageable);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
