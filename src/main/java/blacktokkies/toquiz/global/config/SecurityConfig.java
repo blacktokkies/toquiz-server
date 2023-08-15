@@ -63,7 +63,8 @@ public class SecurityConfig {
             .requestMatchers( // GET 메서드
                 HttpMethod.GET,
                 "api/panels/{panelId}",
-                "api/panels/{panelId}/questions"
+                "api/panels/{panelId}/questions",
+                "api/questions/{questionId}/answers"
             ).permitAll()
             .requestMatchers( // POST 메서드
                 HttpMethod.POST,
