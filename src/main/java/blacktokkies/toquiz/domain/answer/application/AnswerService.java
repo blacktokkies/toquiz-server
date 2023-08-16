@@ -33,7 +33,16 @@ public class AnswerService {
         checkIsAuthorizedToCreate(question);
 
         Answer answer = answerRepository.save(request.toAnswerWith(question));
+        answer.getQuestion().increaseAnswerNum();
         return AnswerResponse.toDto(answer);
+    }
+
+    public GetAnswersResponse getAnswers(Long questionId) {
+        Question question = getQuestion(questionId);
+        List<Answer> answers = answerRepository.findAllByQuestionOrderByCreatedDateDesc(question);
+        List<AnswerResponse> answerResponses = answers.stream().map(AnswerResponse::toDto).toList();
+
+        return GetAnswersResponse.toDto(question, answerResponses);
     }
 
     private Member getMember() {
@@ -54,13 +63,5 @@ public class AnswerService {
         if(!Objects.equals(member.getId(), panelCreator.getId())){
             throw new RestApiException(NOT_CREATOR_PANEL);
         }
-    }
-
-    public GetAnswersResponse getAnswers(Long questionId) {
-        Question question = getQuestion(questionId);
-        List<Answer> answers = answerRepository.findAllByQuestionOrderByCreatedDateDesc(question);
-        List<AnswerResponse> answerResponses = answers.stream().map(AnswerResponse::toDto).toList();
-
-        return GetAnswersResponse.toDto(question, answerResponses);
     }
 }
