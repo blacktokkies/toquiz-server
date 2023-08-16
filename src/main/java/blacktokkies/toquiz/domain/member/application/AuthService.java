@@ -64,7 +64,7 @@ public class AuthService {
 
         checkValidRefreshToken(refreshToken, member);
 
-        String accessToken = (email);
+        String accessToken = tokenService.generateAccessToken(email);
 
         return AuthenticateResponse.toDto(member, accessToken);
     }
