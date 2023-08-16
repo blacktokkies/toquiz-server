@@ -68,7 +68,8 @@ public class SecurityConfig {
             ).permitAll()
             .requestMatchers( // POST 메서드
                 HttpMethod.POST,
-                "api/panels/{panelId}/question"
+                "api/panels/{panelId}/question",
+                "api/questions/{questionId}/like"
             ).permitAll()
             .anyRequest().authenticated();
 
