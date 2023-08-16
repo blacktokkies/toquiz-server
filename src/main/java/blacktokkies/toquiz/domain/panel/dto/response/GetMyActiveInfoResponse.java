@@ -9,8 +9,8 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class GetMyActiveInfoResponse {
-    public List<Long> questionIds;
-    public List<Long> likeIds;
+    public List<Long> createdIds;
+    public List<Long> likedIds;
 
     public static GetMyActiveInfoResponse toDto(ActivePanel activePanel){
         return new GetMyActiveInfoResponse(
