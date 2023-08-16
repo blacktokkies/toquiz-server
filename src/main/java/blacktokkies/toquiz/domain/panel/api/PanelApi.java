@@ -3,10 +3,14 @@ package blacktokkies.toquiz.domain.panel.api;
 import blacktokkies.toquiz.domain.panel.application.PanelService;
 import blacktokkies.toquiz.domain.panel.dto.request.CreatePanelRequest;
 import blacktokkies.toquiz.domain.panel.dto.request.UpdatePanelRequest;
+import blacktokkies.toquiz.domain.panel.dto.response.GetMyActiveInfoResponse;
 import blacktokkies.toquiz.domain.panel.dto.response.GetMyPanelsResponse;
 import blacktokkies.toquiz.domain.panel.dto.response.PanelResponse;
 import blacktokkies.toquiz.global.common.response.SuccessMessage;
 import blacktokkies.toquiz.global.common.response.SuccessResponse;
+import blacktokkies.toquiz.global.util.auth.CookieService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class PanelApi {
     private final PanelService panelService;
+    private final CookieService cookieService;
+
     @PostMapping("api/panel")
     public ResponseEntity<SuccessResponse<PanelResponse>> createPanel(
         @RequestBody  @Valid CreatePanelRequest createPanelRequest
@@ -57,6 +63,25 @@ public class PanelApi {
     @GetMapping("api/panels/{panelId}")
     public ResponseEntity<SuccessResponse<PanelResponse>> getPanelInfo(@PathVariable Long panelId){
         PanelResponse response = PanelResponse.toDto(panelService.getPanel(panelId));
+
+        return ResponseEntity.ok(new SuccessResponse<>(response));
+    }
+
+    @GetMapping("api/panels/{panelId}/active-info")
+    public ResponseEntity<SuccessResponse<GetMyActiveInfoResponse>> getActiveInfo(
+        HttpServletResponse httpResponse,
+        @PathVariable Long panelId,
+        @CookieValue(value = "active_info_id", required = false) String activeInfoId
+    ){
+        // ActiveInfoId가 없는 사용자에게 ActiveInfoId를 쿠키로 새로 발급한다.
+        if(activeInfoId == null){
+            Cookie activeInfoIdCookie = cookieService.issueActiveInfoIdCookie();
+            httpResponse.addCookie(activeInfoIdCookie);
+
+            activeInfoId = activeInfoIdCookie.getValue();
+        }
+
+        GetMyActiveInfoResponse response = panelService.getMyActiveInfo(panelId, activeInfoId);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
