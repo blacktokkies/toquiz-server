@@ -13,14 +13,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AnswerResponse {
-    private Long answerId;
+    private Long id;
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public static AnswerResponse toDto(Answer answer){
         return AnswerResponse.builder()
-            .answerId(answer.getId())
+            .id(answer.getId())
             .content(answer.getContent())
             .createdAt(answer.getCreatedDate())
             .updatedAt(answer.getUpdatedDate())
