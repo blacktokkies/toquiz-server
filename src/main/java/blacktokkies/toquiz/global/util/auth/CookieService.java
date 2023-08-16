@@ -1,5 +1,7 @@
 package blacktokkies.toquiz.global.util.auth;
 
+import blacktokkies.toquiz.domain.activeinfo.ActiveInfoRepository;
+import blacktokkies.toquiz.domain.activeinfo.domain.ActiveInfo;
 import blacktokkies.toquiz.domain.member.exception.MemberErrorCode;
 import blacktokkies.toquiz.global.common.error.RestApiException;
 import blacktokkies.toquiz.domain.member.dao.MemberRepository;
@@ -14,10 +16,22 @@ import org.springframework.stereotype.Service;
 public class CookieService {
     private final MemberRepository memberRepository;
     private final TokenService tokenService;
+    private final ActiveInfoRepository activeInfoRepository;
+
     @Value("${application.security.cookie.active-info-id.expiration}")
     private Integer ACTIVE_INFO_ID_EXPIRATION;
     @Value("${application.security.cookie.refresh-token.expiration}")
     private Integer REFRESH_TOKEN_EXPIRATION;
+
+    public Cookie issueActiveInfoIdCookie(){
+        ActiveInfo activeInfo = activeInfoRepository.save(new ActiveInfo());
+        Cookie cookie = new Cookie("active_info_id", activeInfo.getId());
+        cookie.setMaxAge(ACTIVE_INFO_ID_EXPIRATION);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+
+        return cookie;
+    }
 
     public Cookie issueActiveInfoIdCookie(String email){
         Member member = memberRepository.findByEmail(email)
