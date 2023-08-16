@@ -6,7 +6,7 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 public class ToggleLikeQuestionResponse {
-    private Long questionId;
+    private Long id;
     private long likeNum;
     private Boolean isActived;
 
