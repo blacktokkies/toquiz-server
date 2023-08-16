@@ -40,7 +40,15 @@ public class QuestionService {
         String activeInfoId,
         Long panelId)
     {
-        Question question = questionRepository.save(new Question(createQuestionRequest.getContent(), getPanel(panelId), activeInfoId));
+        Question question = questionRepository.save(
+                new Question(createQuestionRequest.getContent(), getPanel(panelId),
+                activeInfoId));
+
+        ActiveInfo activeInfo = getActiveInfo(activeInfoId);
+        List<Long> createdQuestionIds = getCreatedQuestions(activeInfo, panelId);
+        createdQuestionIds.add(question.getId());
+
+        activeInfoRepository.save(activeInfo);
 
         return QuestionResponse.toDto(question);
     }
@@ -64,31 +72,41 @@ public class QuestionService {
         Long panelId = question.getPanel().getId();
 
         ActiveInfo activeInfo = getActiveInfo(activeInfoId);
-        List<Long> likedQuestions = getLikedQuestions(activeInfo, panelId);
+        List<Long> likedQuestionIds = getLikedQuestions(activeInfo, panelId);
 
-        updateLikedQuestions(likedQuestions, question, active);
+        updateLikedQuestions(likedQuestionIds, question, active);
 
         activeInfoRepository.save(activeInfo);
 
         return ToggleLikeQuestionResponse.toDto(question, active);
     }
 
-    private void updateLikedQuestions(List<Long> likedQuestions, Question question, boolean active) {
+    private void updateLikedQuestions(List<Long> likedQuestionIds, Question question, boolean active) {
         Long questionId = question.getId();
 
-        boolean isAlreadyLikedQuestion = likedQuestions.stream().anyMatch((id)-> Objects.equals(id, questionId));
+        boolean isAlreadyLikedQuestion = likedQuestionIds.stream().anyMatch((id)-> Objects.equals(id, questionId));
 
         if(active){
             // 좋아요가 이미 활성화된 상태에서 활성화를 하려고 시도할 때 에러처리
             if(isAlreadyLikedQuestion) throw new RestApiException(INVALID_ACTIVE_LIKE_QUESTION);
-            likedQuestions.add(questionId);
+            likedQuestionIds.add(questionId);
             question.increaseLikeNum();
         }else{
             // 좋아요가 이미 비활성화된 상태에서 비활성화를 하려고 시도할 때 에러처리
             if(!isAlreadyLikedQuestion) throw new RestApiException(INVALID_INACTIVE_LIKE_QUESTION);
-            likedQuestions.removeIf((id)->Objects.equals(id, questionId));
+            likedQuestionIds.removeIf((id)->Objects.equals(id, questionId));
             question.decreaseLikeNum();
         }
+    }
+
+    private List<Long> getCreatedQuestions(ActiveInfo activeInfo, Long panelId){
+        Map<Long, ActivePanel> activePanelMap = activeInfo.getActivePanels();
+        if(!activePanelMap.containsKey(panelId)){
+            activePanelMap.put(panelId, new ActivePanel());
+        }
+        ActivePanel activePanel = activePanelMap.get(panelId);
+
+        return activePanel.getCreatedQuestionIds();
     }
 
     private List<Long> getLikedQuestions(ActiveInfo activeInfo, Long panelId) {
@@ -97,6 +115,7 @@ public class QuestionService {
             activePanelMap.put(panelId, new ActivePanel());
         }
         ActivePanel activePanel = activePanelMap.get(panelId);
+
         return activePanel.getLikedQuestionIds();
     }
 
