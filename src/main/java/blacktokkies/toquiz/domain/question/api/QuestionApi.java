@@ -4,6 +4,7 @@ import blacktokkies.toquiz.domain.question.application.QuestionService;
 import blacktokkies.toquiz.domain.question.dto.request.CreateQuestionRequest;
 import blacktokkies.toquiz.domain.question.dto.response.GetQuestionsResponse;
 import blacktokkies.toquiz.domain.question.dto.response.QuestionResponse;
+import blacktokkies.toquiz.domain.question.dto.response.ToggleLikeQuestionResponse;
 import blacktokkies.toquiz.global.common.response.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,17 @@ public class QuestionApi {
         @PathVariable Long panelId
     ){
         GetQuestionsResponse response = questionService.getQuestions(panelId, pageable);
+
+        return ResponseEntity.ok(new SuccessResponse<>(response));
+    }
+
+    @PostMapping("api/questions/{questionId}/like")
+    public ResponseEntity<SuccessResponse<ToggleLikeQuestionResponse>> likeQuestion(
+        @PathVariable Long questionId,
+        @CookieValue("active_info_id") String activeInfoId,
+        @RequestParam boolean active
+    ){
+        ToggleLikeQuestionResponse response = questionService.toggleLike(questionId, activeInfoId, active);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
