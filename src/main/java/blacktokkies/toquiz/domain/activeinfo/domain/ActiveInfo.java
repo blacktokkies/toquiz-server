@@ -1,9 +1,9 @@
 package blacktokkies.toquiz.domain.activeinfo.domain;
 
-import jakarta.persistence.Id;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +13,8 @@ import java.util.Map;
 @NoArgsConstructor
 public class ActiveInfo {
     @Id
-    String id;
-    private final Map<String, ActivePanel> activePanels = new HashMap<>();
+    private String id;
+
+    @Field("active_panels")
+    private Map<Long, ActivePanel> activePanels = new HashMap<>();
 }
