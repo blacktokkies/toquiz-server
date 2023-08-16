@@ -30,13 +30,13 @@ public class SignUpRequest {
     @Length(min = 2, max = 20, message = NICKNAME_LENGTH_MESSAGE)
     private String nickname;
 
-    public Member toMemberWith(ActiveInfo activeInfoId){
+    public Member toMemberWith(ActiveInfo activeInfo){
         return Member.builder()
             .email(email)
             .password(encryptPassword(password))
             .nickname(nickname)
             .provider(Provider.LOCAL)
-            .activeInfoId(activeInfoId.getId())
+            .activeInfoId(activeInfo.getId())
             .build();
     }
 }
