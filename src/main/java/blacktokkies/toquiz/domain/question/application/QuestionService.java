@@ -89,13 +89,13 @@ public class QuestionService {
         if(active){
             // 좋아요가 이미 활성화된 상태에서 활성화를 하려고 시도할 때 에러처리
             if(isAlreadyLikedQuestion) throw new RestApiException(INVALID_ACTIVE_LIKE_QUESTION);
-            likedQuestionIds.add(questionId);
-            question.increaseLike();
+            likedQuestions.add(questionId);
+            question.increaseLikeNum();
         }else{
             // 좋아요가 이미 비활성화된 상태에서 비활성화를 하려고 시도할 때 에러처리
             if(!isAlreadyLikedQuestion) throw new RestApiException(INVALID_INACTIVE_LIKE_QUESTION);
-            likedQuestionIds.removeIf((id)->Objects.equals(id, questionId));
-            question.decreaseLike();
+            likedQuestions.removeIf((id)->Objects.equals(id, questionId));
+            question.decreaseLikeNum();
         }
     }
 

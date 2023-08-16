@@ -49,13 +49,17 @@ public class Question extends BaseTime {
         this.activeInfoId = activeInfoId;
     }
 
-    public void decreaseLike(){
+    public void decreaseLikeNum(){
         if(this.likeNum < 0)
             throw new RestApiException(INVALID_INACTIVE_LIKE_QUESTION);
         this.likeNum -= 1;
     }
 
-    public void increaseLike(){
+    public void increaseLikeNum(){
         this.likeNum += 1;
+    }
+
+    public void increaseAnswerNum() {
+        this.answerNum += 1;
     }
 }
