@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QuestionResponse {
-    private Long questionId;
+    private Long id;
     private String content;
     private long answerNum;
     private long likeNum;
@@ -23,7 +23,7 @@ public class QuestionResponse {
 
     public static QuestionResponse toDto(Question question){
         return QuestionResponse.builder()
-            .questionId(question.getId())
+            .id(question.getId())
             .content(question.getContent())
             .answerNum(question.getAnswerNum())
             .likeNum(question.getLikeNum())

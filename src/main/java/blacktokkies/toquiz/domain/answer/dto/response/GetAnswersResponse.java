@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GetAnswersResponse {
-    private Long questionId;
+    private Long id;
     private String content;
     private long answerNum;
     private long likeNum;
@@ -22,7 +22,7 @@ public class GetAnswersResponse {
 
     public static GetAnswersResponse toDto(Question question, List<AnswerResponse> answers){
         return GetAnswersResponse.builder()
-            .questionId(question.getId())
+            .id(question.getId())
             .content(question.getContent())
             .answerNum(question.getAnswerNum())
             .likeNum(question.getLikeNum())
