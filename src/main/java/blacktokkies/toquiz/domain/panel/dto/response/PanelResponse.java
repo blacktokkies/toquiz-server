@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PanelResponse {
-    private Long panelId;
+    private Long id;
     private String title;
     private String description;
     private long scarpNum;
@@ -23,7 +23,7 @@ public class PanelResponse {
 
     public static PanelResponse toDto(Panel panel){
         return PanelResponse.builder()
-            .panelId(panel.getId())
+            .id(panel.getId())
             .title(panel.getTitle())
             .description(panel.getDescription())
             .isArchived(panel.isArchived())
