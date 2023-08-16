@@ -3,11 +3,14 @@ package blacktokkies.toquiz.domain.question.domain;
 import blacktokkies.toquiz.domain.answer.domain.Answer;
 import blacktokkies.toquiz.global.common.domain.BaseTime;
 import blacktokkies.toquiz.domain.panel.domain.Panel;
+import blacktokkies.toquiz.global.common.error.RestApiException;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static blacktokkies.toquiz.domain.question.exception.QuestionErrorCode.INVALID_INACTIVE_LIKE_QUESTION;
 
 @Entity
 @Getter
@@ -44,5 +47,15 @@ public class Question extends BaseTime {
         this.likeNum = 0;
         this.panel = panel;
         this.activeInfoId = activeInfoId;
+    }
+
+    public void decreaseLike(){
+        if(this.likeNum < 0)
+            throw new RestApiException(INVALID_INACTIVE_LIKE_QUESTION);
+        this.likeNum -= 1;
+    }
+
+    public void increaseLike(){
+        this.likeNum += 1;
     }
 }
