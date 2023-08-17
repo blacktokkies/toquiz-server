@@ -41,8 +41,8 @@ public class AuthApi {
     ResponseEntity<SuccessMessage> logout(HttpServletResponse response){
         authService.logout();
 
-        response.addCookie(cookieService.expireCookie("ActiveInfoId"));
-        response.addCookie(cookieService.expireCookie("RefreshToken"));
+        response.addCookie(cookieService.expireCookie("active_info_id"));
+        response.addCookie(cookieService.expireCookie("refresh_token"));
 
         return ResponseEntity.ok(SuccessMessage.LOGOUT);
     }
