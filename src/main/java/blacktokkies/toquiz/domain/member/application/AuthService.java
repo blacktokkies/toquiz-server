@@ -50,9 +50,11 @@ public class AuthService {
     }
 
     @Transactional
-    public void resign(String password){
+    public void resign(String password, String activeInfoId, String refreshToken){
         Member member = getMember();
         checkCorrectPassword(password, member.getPassword());
+        tokenService.deleteRefreshToken(member.getEmail());
+        activeInfoRepository.deleteById(activeInfoId);
         memberRepository.delete(member);
     }
 
