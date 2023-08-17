@@ -50,9 +50,11 @@ public class AuthApi {
     @PostMapping("api/auth/resign")
     public ResponseEntity<SuccessMessage> deleteMyInfo(
         @RequestBody @Valid ResignRequest request,
-        HttpServletResponse response
+        HttpServletResponse response,
+        @CookieValue("active_info_id") String activeInfoId,
+        @CookieValue("refresh_token") String refreshToken
         ){
-        authService.resign(request.getPassword());
+        authService.resign(request.getPassword(), activeInfoId, refreshToken);
 
         response.addCookie(cookieService.expireCookie("active_info_id"));
         response.addCookie(cookieService.expireCookie("refresh_token"));
