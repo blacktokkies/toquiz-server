@@ -14,10 +14,16 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(
+    uniqueConstraints = {@UniqueConstraint(name = "secondary_id_unique", columnNames = "secondary_id")}
+)
 public class Panel extends BaseTime {
     @Id @GeneratedValue
     @Column(name = "panel_id")
     private Long id;
+
+    @Column(name = "secondary_id", nullable = false)
+    private String sid;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
