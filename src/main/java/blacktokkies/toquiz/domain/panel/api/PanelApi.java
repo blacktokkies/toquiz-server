@@ -43,34 +43,34 @@ public class PanelApi {
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
 
-    @DeleteMapping("api/panels/{panelId}")
-    public ResponseEntity<SuccessMessage> deletePanel(@PathVariable Long panelId){
-        panelService.deletePanel(panelId);
+    @DeleteMapping("api/panels/{panelSid}")
+    public ResponseEntity<SuccessMessage> deletePanel(@PathVariable String panelSid){
+        panelService.deletePanel(panelSid);
 
         return ResponseEntity.ok(SuccessMessage.PANEL_DELETE);
     }
 
-    @PatchMapping("api/panels/{panelId}")
+    @PatchMapping("api/panels/{panelSid}")
     public ResponseEntity<SuccessResponse<PanelResponse>> updatePanel(
         @RequestBody @Valid UpdatePanelRequest request,
-        @PathVariable Long panelId
+        @PathVariable String panelSid
         ){
-        PanelResponse response = panelService.updatePanel(request, panelId);
+        PanelResponse response = panelService.updatePanel(request, panelSid);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
 
-    @GetMapping("api/panels/{panelId}")
-    public ResponseEntity<SuccessResponse<PanelResponse>> getPanelInfo(@PathVariable Long panelId){
-        PanelResponse response = PanelResponse.toDto(panelService.getPanel(panelId));
+    @GetMapping("api/panels/{panelSid}")
+    public ResponseEntity<SuccessResponse<PanelResponse>> getPanelInfo(@PathVariable String panelSid){
+        PanelResponse response = PanelResponse.toDto(panelService.getPanel(panelSid));
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
 
-    @GetMapping("api/panels/{panelId}/active-info")
+    @GetMapping("api/panels/{panelSid}/active-info")
     public ResponseEntity<SuccessResponse<GetMyActiveInfoResponse>> getActiveInfo(
         HttpServletResponse httpResponse,
-        @PathVariable Long panelId,
+        @PathVariable String panelSid,
         @CookieValue(value = "active_info_id", required = false) String activeInfoId
     ){
         // ActiveInfoId가 없는 사용자에게 ActiveInfoId를 쿠키로 새로 발급한다.
@@ -81,7 +81,7 @@ public class PanelApi {
             activeInfoId = activeInfoIdCookie.getValue();
         }
 
-        GetMyActiveInfoResponse response = panelService.getMyActiveInfo(panelId, activeInfoId);
+        GetMyActiveInfoResponse response = panelService.getMyActiveInfo(panelSid, activeInfoId);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
