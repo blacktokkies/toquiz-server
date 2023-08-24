@@ -16,5 +16,5 @@ public class ActiveInfo {
     private String id;
 
     @Field("active_panels")
-    private Map<Long, ActivePanel> activePanels = new HashMap<>();
+    private Map<String, ActivePanel> activePanels = new HashMap<>();
 }
