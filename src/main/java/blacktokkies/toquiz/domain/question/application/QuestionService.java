@@ -38,14 +38,14 @@ public class QuestionService {
     public QuestionResponse createQuestion(
         CreateQuestionRequest createQuestionRequest,
         String activeInfoId,
-        Long panelId)
+        String panelSid)
     {
         Question question = questionRepository.save(
-                new Question(createQuestionRequest.getContent(), getPanel(panelId),
+                new Question(createQuestionRequest.getContent(), getPanel(panelSid),
                 activeInfoId));
 
         ActiveInfo activeInfo = getActiveInfo(activeInfoId);
-        List<Long> createdQuestionIds = getCreatedQuestions(activeInfo, panelId);
+        List<Long> createdQuestionIds = getCreatedQuestions(activeInfo, panelSid);
         createdQuestionIds.add(question.getId());
 
         activeInfoRepository.save(activeInfo);
@@ -53,13 +53,13 @@ public class QuestionService {
         return QuestionResponse.toDto(question);
     }
 
-    private Panel getPanel(Long panelId){
-        return panelRepository.findById(panelId).orElseThrow(
+    private Panel getPanel(String panelSid){
+        return panelRepository.findBySid(panelSid).orElseThrow(
             () -> new RestApiException(NOT_EXIST_PANEL));
     }
 
-    public GetQuestionsResponse getQuestions(Long panelId, Pageable pageable) {
-        Page<Question> questions = questionRepository.findAllByPanel(getPanel(panelId), pageable);
+    public GetQuestionsResponse getQuestions(String panelSid, Pageable pageable) {
+        Page<Question> questions = questionRepository.findAllByPanel(getPanel(panelSid), pageable);
         List<QuestionResponse> questionResponses = questions.stream().map(QuestionResponse::toDto).toList();
         int nextPage = questions.hasNext() ? pageable.getPageNumber() + 1 : -1;
 
@@ -69,10 +69,10 @@ public class QuestionService {
     @Transactional
     public ToggleLikeQuestionResponse toggleLike(Long questionId, String activeInfoId, boolean active) {
         Question question = getQuestion(questionId);
-        Long panelId = question.getPanel().getId();
+        String panelSid = question.getPanel().getSid();
 
         ActiveInfo activeInfo = getActiveInfo(activeInfoId);
-        List<Long> likedQuestionIds = getLikedQuestions(activeInfo, panelId);
+        List<Long> likedQuestionIds = getLikedQuestions(activeInfo, panelSid);
 
         updateLikedQuestions(likedQuestionIds, question, active);
 
@@ -99,22 +99,22 @@ public class QuestionService {
         }
     }
 
-    private List<Long> getCreatedQuestions(ActiveInfo activeInfo, Long panelId){
-        Map<Long, ActivePanel> activePanelMap = activeInfo.getActivePanels();
-        if(!activePanelMap.containsKey(panelId)){
-            activePanelMap.put(panelId, new ActivePanel());
+    private List<Long> getCreatedQuestions(ActiveInfo activeInfo, String panelSid){
+        Map<String, ActivePanel> activePanelMap = activeInfo.getActivePanels();
+        if(!activePanelMap.containsKey(panelSid)){
+            activePanelMap.put(panelSid, new ActivePanel());
         }
-        ActivePanel activePanel = activePanelMap.get(panelId);
+        ActivePanel activePanel = activePanelMap.get(panelSid);
 
         return activePanel.getCreatedQuestionIds();
     }
 
-    private List<Long> getLikedQuestions(ActiveInfo activeInfo, Long panelId) {
-        Map<Long, ActivePanel> activePanelMap = activeInfo.getActivePanels();
-        if(!activePanelMap.containsKey(panelId)){
-            activePanelMap.put(panelId, new ActivePanel());
+    private List<Long> getLikedQuestions(ActiveInfo activeInfo, String panelSid) {
+        Map<String, ActivePanel> activePanelMap = activeInfo.getActivePanels();
+        if(!activePanelMap.containsKey(panelSid)){
+            activePanelMap.put(panelSid, new ActivePanel());
         }
-        ActivePanel activePanel = activePanelMap.get(panelId);
+        ActivePanel activePanel = activePanelMap.get(panelSid);
 
         return activePanel.getLikedQuestionIds();
     }
