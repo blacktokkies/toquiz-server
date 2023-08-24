@@ -21,10 +21,11 @@ public class CreatePanelRequest {
     @Length(max = 50, message = DESCRIPTION_LENGTH_MESSAGE)
     private String description;
 
-    public Panel toPanelWith(Member member){
+    public Panel toPanelWith(Member member, String sid){
         return Panel.builder()
             .member(member)
             .title(title)
+            .sid(sid)
             .description(Optional.ofNullable(description).orElse(""))
             .isArchived(false)
             .scarpNum(0)
