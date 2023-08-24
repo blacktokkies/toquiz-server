@@ -12,7 +12,6 @@ import blacktokkies.toquiz.domain.panel.dto.response.GetMyActiveInfoResponse;
 import blacktokkies.toquiz.domain.panel.dto.response.GetMyPanelsResponse;
 import blacktokkies.toquiz.domain.panel.dto.response.PanelResponse;
 import blacktokkies.toquiz.global.common.error.RestApiException;
-import blacktokkies.toquiz.global.util.auth.CookieService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +26,7 @@ import java.util.Objects;
 import static blacktokkies.toquiz.domain.activeinfo.exception.ActiveInfoException.NOT_EXIST_ACTIVE_INFO;
 import static blacktokkies.toquiz.domain.panel.exception.PanelErrorCode.NOT_AUTHORIZED_DELETE;
 import static blacktokkies.toquiz.domain.panel.exception.PanelErrorCode.NOT_EXIST_PANEL;
+import static blacktokkies.toquiz.global.util.RandomStringGenerator.generateRandomString;
 
 @Service
 @RequiredArgsConstructor
@@ -34,12 +34,11 @@ import static blacktokkies.toquiz.domain.panel.exception.PanelErrorCode.NOT_EXIS
 public class PanelService {
     private final ActiveInfoRepository activeInfoRepository;
     private final PanelRepository panelRepository;
-    private final CookieService cookieService;
 
     @Transactional
     public PanelResponse createPanel(CreatePanelRequest createPanelRequest) {
         Member member = getMember();
-        Panel panel = panelRepository.save(createPanelRequest.toPanelWith(member));
+        Panel panel = panelRepository.save(createPanelRequest.toPanelWith(member, generateSecondaryId()));
 
         return PanelResponse.toDto(panel);
     }
@@ -54,15 +53,15 @@ public class PanelService {
     }
 
     @Transactional
-    public void deletePanel(Long panelId) {
-        checkIsAuthorizedToDelete(panelId);
+    public void deletePanel(String panelSid) {
+        checkIsAuthorizedToDelete(panelSid);
 
-        panelRepository.deleteById(panelId);
+        panelRepository.deleteBySid(panelSid);
     }
 
     @Transactional
-    public PanelResponse updatePanel(UpdatePanelRequest updatePanelRequest, Long panelId) {
-        Panel panel = getPanel(panelId);
+    public PanelResponse updatePanel(UpdatePanelRequest updatePanelRequest, String panelSid) {
+        Panel panel = getPanel(panelSid);
         panel.updatePanelInfo(
             updatePanelRequest.getTitle(),
             updatePanelRequest.getDescription()
@@ -72,27 +71,30 @@ public class PanelService {
         return PanelResponse.toDto(updatedPanel);
     }
 
-    public GetMyActiveInfoResponse getMyActiveInfo(Long panelId, String activeInfoId) {
-        checkIsExistPanel(panelId);
+    public GetMyActiveInfoResponse getMyActiveInfo(String panelSid, String activeInfoId) {
+        checkIsExistPanel(panelSid);
 
         ActiveInfo activeInfo = getActiveInfo(activeInfoId);
-        Map<Long, ActivePanel> activePanelMap = activeInfo.getActivePanels();
+        Map<String, ActivePanel> activePanelMap = activeInfo.getActivePanels();
 
         // 현재 패널이 활동 정보에 존재하지 않으면 새로 추가한다.
-        if(!activePanelMap.containsKey(panelId)){
-            activePanelMap.put(panelId, new ActivePanel());
+        if(!activePanelMap.containsKey(panelSid)){
+            activePanelMap.put(panelSid, new ActivePanel());
         }
 
-        return GetMyActiveInfoResponse.toDto(activePanelMap.get(panelId));
+        return GetMyActiveInfoResponse.toDto(activePanelMap.get(panelSid));
     }
 
-    private ActiveInfo getActiveInfo(String activeInfoId) {
-        return activeInfoRepository.findById(activeInfoId)
-            .orElseThrow(() -> new RestApiException(NOT_EXIST_ACTIVE_INFO));
+    public String generateSecondaryId(){
+        String sid = generateRandomString();
+        while(panelRepository.existsBySid(sid)){
+            sid = generateRandomString();
+        }
+        return sid;
     }
 
-    private void checkIsAuthorizedToDelete(Long panelId) {
-        Panel panel = getPanel(panelId);
+    private void checkIsAuthorizedToDelete(String panelSid) {
+        Panel panel = getPanel(panelSid);
         Member member = getMember();
 
         if(!Objects.equals(member.getId(), panel.getMember().getId())){
@@ -100,17 +102,22 @@ public class PanelService {
         }
     }
 
-    private void checkIsExistPanel(Long panelId){
-        panelRepository.findById(panelId)
-            .orElseThrow(() -> new RestApiException(NOT_EXIST_PANEL));
-    }
-
-    public Panel getPanel(Long panelId){
-        return panelRepository.findById(panelId)
+    private void checkIsExistPanel(String panelSid){
+        panelRepository.findBySid(panelSid)
             .orElseThrow(() -> new RestApiException(NOT_EXIST_PANEL));
     }
 
     private Member getMember() {
         return (Member) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
+    public Panel getPanel(String panelSid){
+        return panelRepository.findBySid(panelSid)
+            .orElseThrow(() -> new RestApiException(NOT_EXIST_PANEL));
+    }
+
+    private ActiveInfo getActiveInfo(String activeInfoId) {
+        return activeInfoRepository.findById(activeInfoId)
+            .orElseThrow(() -> new RestApiException(NOT_EXIST_ACTIVE_INFO));
     }
 }
