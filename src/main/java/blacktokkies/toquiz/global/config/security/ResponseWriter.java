@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 
 @Slf4j
-public class SendErrorResponse {
+public class ResponseWriter {
     public static void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
         log.warn("[{}] {}", "AuthenticationEntryPoint", errorCode.name());
 

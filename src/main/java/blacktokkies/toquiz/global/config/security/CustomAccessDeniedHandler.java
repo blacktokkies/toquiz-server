@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import static blacktokkies.toquiz.global.common.error.errorcode.CommonErrorCode.ACCESS_DENIED;
-import static blacktokkies.toquiz.global.config.security.SendErrorResponse.sendErrorResponse;
+import static blacktokkies.toquiz.global.config.security.ResponseWriter.sendErrorResponse;
 
 @Slf4j
 @Component
