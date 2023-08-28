@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemberInfoResponse {
+    private Long id;
     private String email;
     private String nickname;
     private Provider provider;
@@ -22,6 +23,7 @@ public class MemberInfoResponse {
 
     public static MemberInfoResponse toDto(Member member){
         return MemberInfoResponse.builder()
+            .id(member.getId())
             .email(member.getEmail())
             .nickname(member.getNickname())
             .provider(member.getProvider())
