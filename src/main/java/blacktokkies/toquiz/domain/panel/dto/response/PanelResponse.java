@@ -16,7 +16,7 @@ public class PanelResponse {
     private String sid;
     private String title;
     private String description;
-    private Long authorId;
+    private Author author;
     private long scarpNum;
     private boolean isArchived;
     private LocalDateTime createdAt;
@@ -27,11 +27,18 @@ public class PanelResponse {
             .sid(panel.getSid())
             .title(panel.getTitle())
             .description(panel.getDescription())
-            .authorId(panel.getMember().getId())
+            .author(new Author(panel.getMember().getId(), panel.getMember().getNickname()))
             .isArchived(panel.isArchived())
             .scarpNum(panel.getScarpNum())
             .createdAt(panel.getCreatedDate())
             .updatedAt(panel.getUpdatedDate())
             .build();
+    }
+
+    @Getter
+    @AllArgsConstructor
+    private static class Author{
+        private Long id;
+        private String nickname;
     }
 }
