@@ -31,7 +31,7 @@ public class Question extends BaseTime {
     @Column(nullable = false)
     private long likeNum;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "panel_id")
     private Panel panel;
 
