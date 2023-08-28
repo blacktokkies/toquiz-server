@@ -13,7 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 import static blacktokkies.toquiz.domain.member.exception.MemberErrorCode.INVALID_ACCESS_TOKEN;
-import static blacktokkies.toquiz.global.config.security.SendErrorResponse.sendErrorResponse;
+import static blacktokkies.toquiz.global.config.security.ResponseWriter.sendErrorResponse;
 
 @Slf4j
 @Component
