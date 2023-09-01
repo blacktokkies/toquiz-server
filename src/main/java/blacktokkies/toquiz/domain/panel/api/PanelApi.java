@@ -73,8 +73,8 @@ public class PanelApi {
         @PathVariable String panelSid,
         @CookieValue(value = "active_info_id", required = false) String activeInfoId
     ){
-        // ActiveInfoId가 없는 사용자에게 ActiveInfoId를 쿠키로 새로 발급한다.
-        if(activeInfoId == null){
+        // ActiveInfoId가 유효하지 않으면, ActiveInfoId를 쿠키로 새로 발급한다.
+        if(activeInfoId == null || panelService.isNotExistActiveInfo(activeInfoId)){
             Cookie activeInfoIdCookie = cookieService.issueActiveInfoIdCookie();
             httpResponse.addCookie(activeInfoIdCookie);
 

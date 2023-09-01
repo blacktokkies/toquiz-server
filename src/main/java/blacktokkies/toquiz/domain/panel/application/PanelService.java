@@ -120,4 +120,8 @@ public class PanelService {
         return activeInfoRepository.findById(activeInfoId)
             .orElseThrow(() -> new RestApiException(NOT_EXIST_ACTIVE_INFO));
     }
+
+    public boolean isNotExistActiveInfo(String activeInfoId){
+        return !activeInfoRepository.existsById(activeInfoId);
+    }
 }
