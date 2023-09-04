@@ -39,7 +39,7 @@ public class Panel extends BaseTime {
     @Column(nullable = false)
     private long scarpNum;
 
-    @OneToMany(mappedBy = "panel")
+    @OneToMany(mappedBy = "panel", orphanRemoval = true)
     private List<Question> questions = new ArrayList<>();
 
     public void updatePanelInfo(String title, String description){
