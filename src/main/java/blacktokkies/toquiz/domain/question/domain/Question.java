@@ -35,7 +35,7 @@ public class Question extends BaseTime {
     @JoinColumn(name = "panel_id")
     private Panel panel;
 
-    @OneToMany(mappedBy = "question")
+    @OneToMany(mappedBy = "question", orphanRemoval = true)
     private List<Answer> answers = new ArrayList<>();
 
     @Column(nullable = false)
@@ -47,6 +47,11 @@ public class Question extends BaseTime {
         this.likeNum = 0;
         this.panel = panel;
         this.activeInfoId = activeInfoId;
+    }
+
+    public void addAnswer(Answer answer){
+        this.answers.add(answer);
+        this.answerNum += 1;
     }
 
     public void decreaseLikeNum(){

@@ -42,7 +42,7 @@ public class Member extends BaseTime implements UserDetails{
     @Column(nullable = false)
     private String activeInfoId;
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<Panel> panels = new ArrayList<>();
 
     @Builder
