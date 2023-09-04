@@ -21,4 +21,9 @@ public class Answer extends BaseTime {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id")
     private Question question;
+
+    public Answer(String content, Question question){
+        this.content = content;
+        this.question = question;
+    }
 }

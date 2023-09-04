@@ -16,11 +16,4 @@ public class CreateAnswerRequest {
     @NotBlank(message = QUESTION_CONTENT_EMPTY_MESSAGE)
     @Length(max=200, message = QUESTION_CONTENT_LENGTH_MESSAGE)
     private String content;
-
-    public Answer toAnswerWith(Question question){
-        return Answer.builder()
-            .content(content)
-            .question(question)
-            .build();
-    }
 }

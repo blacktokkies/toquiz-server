@@ -28,12 +28,13 @@ public class AnswerService {
     private final AnswerRepository answerRepository;
 
     @Transactional
-    public AnswerResponse createAnswer(Long questionId, CreateAnswerRequest request) {
+    public AnswerResponse createAnswer(Long questionId, CreateAnswerRequest createAnswerRequest) {
         Question question = getQuestion(questionId);
         checkIsAuthorizedToCreate(question);
 
-        Answer answer = answerRepository.save(request.toAnswerWith(question));
-        answer.getQuestion().increaseAnswerNum();
+        Answer answer = new Answer(createAnswerRequest.getContent(), question);
+        question.addAnswer(answerRepository.save(answer));
+
         return AnswerResponse.toDto(answer);
     }
 
