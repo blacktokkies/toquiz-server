@@ -54,8 +54,11 @@ public class Member extends BaseTime implements UserDetails{
         this.activeInfoId = activeInfoId;
     }
 
-    public void updateMemberInfo(String password, String nickname){
+    public void updatePassword(String password){
         this.password = encryptPassword(password);
+    }
+
+    public void updateNickname(String nickname){
         this.nickname = nickname;
     }
 
