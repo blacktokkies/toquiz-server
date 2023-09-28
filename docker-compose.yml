@@ -5,20 +5,11 @@ services:
     image: soomanbaek/toquiz-api:1.0
     build: .
     depends_on:
-      - mysql
       - redis
     extra_hosts:
       - host.docker.internal:host-gateway
     ports:
       - "8080:8080"
-
-  mysql:
-    container_name: mysql
-    image: soomanbaek/toquiz-mysql:0.1
-    ports:
-      - "3306:3306"
-    extra_hosts:
-      - host.docker.internal:host-gateway
 
   redis:
     container_name: redis
