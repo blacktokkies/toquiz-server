@@ -58,6 +58,10 @@ public class SecurityConfig {
                 "api/panels/{panelId}/question",
                 "api/questions/{questionId}/like"
             ).permitAll()
+            .requestMatchers( // PATCH 메서드
+                HttpMethod.PATCH,
+                "api/questions/{questionId}"
+            ).permitAll()
             .anyRequest().authenticated();
 
         http.exceptionHandling()
