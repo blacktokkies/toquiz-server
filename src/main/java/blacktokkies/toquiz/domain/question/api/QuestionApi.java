@@ -2,6 +2,7 @@ package blacktokkies.toquiz.domain.question.api;
 
 import blacktokkies.toquiz.domain.question.application.QuestionService;
 import blacktokkies.toquiz.domain.question.dto.request.CreateQuestionRequest;
+import blacktokkies.toquiz.domain.question.dto.request.ModifyQuestionRequest;
 import blacktokkies.toquiz.domain.question.dto.response.GetQuestionsResponse;
 import blacktokkies.toquiz.domain.question.dto.response.QuestionResponse;
 import blacktokkies.toquiz.domain.question.dto.response.ToggleLikeQuestionResponse;
@@ -46,6 +47,17 @@ public class QuestionApi {
         @RequestParam boolean active
     ){
         ToggleLikeQuestionResponse response = questionService.toggleLike(questionId, activeInfoId, active);
+
+        return ResponseEntity.ok(new SuccessResponse<>(response));
+    }
+
+    @PatchMapping("api/questions/{questionId}")
+    public ResponseEntity<SuccessResponse<QuestionResponse>> modifyQuestion(
+        @RequestBody @Valid ModifyQuestionRequest request,
+        @PathVariable Long questionId,
+        @CookieValue("active_info_id") String activeInfoId
+    ){
+        QuestionResponse response = questionService.modifyQuestion(request, activeInfoId, questionId);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }

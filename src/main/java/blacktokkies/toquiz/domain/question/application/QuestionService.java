@@ -8,6 +8,7 @@ import blacktokkies.toquiz.domain.panel.domain.Panel;
 import blacktokkies.toquiz.domain.question.dao.QuestionRepository;
 import blacktokkies.toquiz.domain.question.domain.Question;
 import blacktokkies.toquiz.domain.question.dto.request.CreateQuestionRequest;
+import blacktokkies.toquiz.domain.question.dto.request.ModifyQuestionRequest;
 import blacktokkies.toquiz.domain.question.dto.response.GetQuestionsResponse;
 import blacktokkies.toquiz.domain.question.dto.response.QuestionResponse;
 import blacktokkies.toquiz.domain.question.dto.response.ToggleLikeQuestionResponse;
@@ -38,10 +39,9 @@ public class QuestionService {
     public QuestionResponse createQuestion(
         CreateQuestionRequest createQuestionRequest,
         String activeInfoId,
-        String panelSid)
-    {
+        String panelSid) {
         Question question = questionRepository.save(
-                new Question(createQuestionRequest.getContent(), getPanel(panelSid),
+            new Question(createQuestionRequest.getContent(), getPanel(panelSid),
                 activeInfoId));
 
         ActiveInfo activeInfo = getActiveInfo(activeInfoId);
@@ -51,11 +51,6 @@ public class QuestionService {
         activeInfoRepository.save(activeInfo);
 
         return QuestionResponse.toDto(question);
-    }
-
-    private Panel getPanel(String panelSid){
-        return panelRepository.findBySid(panelSid).orElseThrow(
-            () -> new RestApiException(NOT_EXIST_PANEL));
     }
 
     public GetQuestionsResponse getQuestions(String panelSid, Pageable pageable) {
@@ -81,27 +76,61 @@ public class QuestionService {
         return ToggleLikeQuestionResponse.toDto(question, active);
     }
 
+    @Transactional
+    public QuestionResponse modifyQuestion(
+        ModifyQuestionRequest modifyQuestionRequest,
+        String activeInfoId,
+        Long questionId) {
+        Question question = getQuestion(questionId);
+        String panelSid = question.getPanel().getSid();
+
+        List<Long> createdQuestions = getCreatedQuestions(getActiveInfo(activeInfoId), panelSid);
+        checkMyActiveQuestion(createdQuestions, questionId);
+
+        question.updateContent(modifyQuestionRequest.getContent());
+
+        questionRepository.save(question);
+
+        return QuestionResponse.toDto(question);
+    }
+
     private void updateLikedQuestions(List<Long> likedQuestionIds, Question question, boolean active) {
         Long questionId = question.getId();
 
-        boolean isAlreadyLikedQuestion = likedQuestionIds.stream().anyMatch((id)-> Objects.equals(id, questionId));
+        boolean isAlreadyLikedQuestion = likedQuestionIds.stream().anyMatch((id) -> Objects.equals(id, questionId));
 
-        if(active){
+        if (active) {
             // 좋아요가 이미 활성화된 상태에서 활성화를 하려고 시도할 때 에러처리
-            if(isAlreadyLikedQuestion) throw new RestApiException(INVALID_ACTIVE_LIKE_QUESTION);
+            if (isAlreadyLikedQuestion)
+                throw new RestApiException(INVALID_ACTIVE_LIKE_QUESTION);
             likedQuestionIds.add(questionId);
             question.increaseLikeNum();
-        }else{
+        } else {
             // 좋아요가 이미 비활성화된 상태에서 비활성화를 하려고 시도할 때 에러처리
-            if(!isAlreadyLikedQuestion) throw new RestApiException(INVALID_INACTIVE_LIKE_QUESTION);
-            likedQuestionIds.removeIf((id)->Objects.equals(id, questionId));
+            if (!isAlreadyLikedQuestion)
+                throw new RestApiException(INVALID_INACTIVE_LIKE_QUESTION);
+            likedQuestionIds.removeIf((id) -> Objects.equals(id, questionId));
             question.decreaseLikeNum();
         }
     }
 
-    private List<Long> getCreatedQuestions(ActiveInfo activeInfo, String panelSid){
+    // ------------ [엔티티 가져오는 메서드] ------------ //
+    private Panel getPanel(String panelSid) {
+        return panelRepository.findBySid(panelSid).orElseThrow(
+            () -> new RestApiException(NOT_EXIST_PANEL));
+    }
+
+    private Question getQuestion(Long questionId) {
+        return questionRepository.findById(questionId).orElseThrow(() -> new RestApiException(NOT_EXIST_QUESTION));
+    }
+
+    private ActiveInfo getActiveInfo(String activeInfoId) {
+        return activeInfoRepository.findById(activeInfoId).orElseThrow(() -> new RestApiException(NOT_EXIST_ACTIVE_INFO));
+    }
+
+    private List<Long> getCreatedQuestions(ActiveInfo activeInfo, String panelSid) {
         Map<String, ActivePanel> activePanelMap = activeInfo.getActivePanels();
-        if(!activePanelMap.containsKey(panelSid)){
+        if (!activePanelMap.containsKey(panelSid)) {
             activePanelMap.put(panelSid, new ActivePanel());
         }
         ActivePanel activePanel = activePanelMap.get(panelSid);
@@ -111,7 +140,7 @@ public class QuestionService {
 
     private List<Long> getLikedQuestions(ActiveInfo activeInfo, String panelSid) {
         Map<String, ActivePanel> activePanelMap = activeInfo.getActivePanels();
-        if(!activePanelMap.containsKey(panelSid)){
+        if (!activePanelMap.containsKey(panelSid)) {
             activePanelMap.put(panelSid, new ActivePanel());
         }
         ActivePanel activePanel = activePanelMap.get(panelSid);
@@ -119,11 +148,9 @@ public class QuestionService {
         return activePanel.getLikedQuestionIds();
     }
 
-    private ActiveInfo getActiveInfo(String activeInfoId) {
-        return activeInfoRepository.findById(activeInfoId).orElseThrow(() -> new RestApiException(NOT_EXIST_ACTIVE_INFO));
-    }
-
-    private Question getQuestion(Long questionId) {
-        return questionRepository.findById(questionId).orElseThrow(() -> new RestApiException(NOT_EXIST_QUESTION));
+    // ------------ [검증 메서드] ------------ //
+    private void checkMyActiveQuestion(List<Long> myActiveQuestions, Long questionId){
+        boolean isMyActiveQuestion = myActiveQuestions.stream().anyMatch(id -> Objects.equals(id, questionId));
+        if(!isMyActiveQuestion) throw new RestApiException(NOT_ACTIVE_QUESTION);
     }
 }
