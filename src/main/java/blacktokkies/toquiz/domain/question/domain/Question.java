@@ -67,4 +67,8 @@ public class Question extends BaseTime {
     public void increaseAnswerNum() {
         this.answerNum += 1;
     }
+
+    public void updateContent(String content){
+        this.content = content;
+    }
 }
