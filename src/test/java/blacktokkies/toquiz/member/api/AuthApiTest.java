@@ -3,6 +3,7 @@ package blacktokkies.toquiz.member.api;
 import blacktokkies.toquiz.domain.member.api.AuthApi;
 import blacktokkies.toquiz.domain.member.application.AuthService;
 import blacktokkies.toquiz.domain.member.dto.request.LoginRequest;
+import blacktokkies.toquiz.domain.member.dto.request.ResignRequest;
 import blacktokkies.toquiz.domain.member.dto.request.SignUpRequest;
 import blacktokkies.toquiz.domain.member.dto.response.AuthenticateResponse;
 import blacktokkies.toquiz.domain.model.Provider;
@@ -24,8 +25,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.time.LocalDateTime;
 
 import static blacktokkies.toquiz.domain.member.exception.MemberErrorCode.*;
-import static blacktokkies.toquiz.global.common.response.SuccessMessage.LOGOUT;
-import static blacktokkies.toquiz.global.common.response.SuccessMessage.SIGN_UP;
+import static blacktokkies.toquiz.global.common.response.SuccessMessage.*;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -436,6 +436,92 @@ public class AuthApiTest {
 
                 // when, then
                 assertThatThrownBy(() -> requestApi()).hasCause(new RestApiException(INVALID_REFRESH_TOKEN));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("회원_탈퇴")
+    class Resign{
+        private ResultActions requestApi(ResignRequest request) throws Exception {
+            return mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/auth/resign")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+                    .header("Authentication", accessToken)
+                    .cookie(new Cookie("refresh_token", refreshToken))
+                    .cookie(new Cookie("active_info_id", activeInfoId))
+            );
+        }
+        @Test
+        void 회원_탈퇴_성공() throws Exception {
+            // given
+            final ResignRequest request = ResignRequest.builder()
+                .password("test@311")
+                .build();
+
+            doNothing().when(authService).resign(request.getPassword(), activeInfoId, refreshToken);
+            doReturn(expiredCookie).when(cookieService).expireCookie(any(String.class));
+
+            // when
+            final ResultActions resultActions = requestApi(request);
+
+            // then
+            resultActions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(RESIGN.getStatusCode()))
+                .andExpect(jsonPath("$.message").value(RESIGN.getMessage()));
+        }
+
+        @Nested
+        class 회원_탈퇴_실패{
+            @Nested
+            class 형식_제약_검증_실패{
+                @Test
+                void 비밀번호_형식_제약_검증() throws Exception {
+                    // given
+                    final ResignRequest request = ResignRequest.builder()
+                        .password("test11311")
+                        .build();
+
+                    // when
+                    final ResultActions resultActions = requestApi(request);
+
+                    // then
+                    resultActions.andExpect(status().isBadRequest()).andReturn();
+                }
+
+                @Test
+                void 비밀번호_길이_제약_검증() throws Exception {
+                    // given
+                    final ResignRequest request1 = ResignRequest.builder() // 길이가 8자 미만
+                        .password("test@12")
+                        .build();
+
+                    final ResignRequest request2 = ResignRequest.builder() // 길이가 20자 초과
+                        .password("test@012345678012345678")
+                        .build();
+
+                    // when
+                    ResultActions resultActions1 = requestApi(request1);
+                    ResultActions resultActions2 = requestApi(request2);
+
+                    // then
+                    resultActions1.andExpect(status().isBadRequest()).andReturn();
+                    resultActions2.andExpect(status().isBadRequest()).andReturn();
+                }
+            }
+            @Test
+            void 비밀번호가_일치하지_않음(){
+                // given
+                ResignRequest request = ResignRequest.builder()
+                    .password("test@311")
+                    .build();
+
+                doThrow(new RestApiException(NOT_MATCH_PASSWORD)).when(authService)
+                    .resign(request.getPassword(), activeInfoId, refreshToken);
+
+                // when, then
+                assertThatThrownBy(() -> requestApi(request)).hasCause(new RestApiException(NOT_MATCH_PASSWORD));
             }
         }
     }
