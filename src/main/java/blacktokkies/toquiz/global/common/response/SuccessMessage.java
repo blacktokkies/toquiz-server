@@ -13,6 +13,7 @@ public enum SuccessMessage {
     LOGOUT(HttpStatus.OK.value(), "로그아웃에 성공하였습니다."),
     RESIGN(HttpStatus.OK.value(), "회원탈퇴에 성공하였습니다."),
     PANEL_DELETE(HttpStatus.OK.value(), "패널 삭제에 성공하였습니다."),
+    QUESTION_DELETE(HttpStatus.OK.value(), "질문 삭제에 성공하였습니다.")
     ;
 
     private final int statusCode;
