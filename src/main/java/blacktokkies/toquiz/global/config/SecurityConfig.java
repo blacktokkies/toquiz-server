@@ -62,6 +62,10 @@ public class SecurityConfig {
                 HttpMethod.PATCH,
                 "api/questions/{questionId}"
             ).permitAll()
+            .requestMatchers(
+                HttpMethod.DELETE,
+                "api/questions/{questionId}"
+            ).permitAll()
             .anyRequest().authenticated();
 
         http.exceptionHandling()
