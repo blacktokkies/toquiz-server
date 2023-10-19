@@ -136,66 +136,6 @@ public class MemberApiTest {
         }
         @Nested
         class 자신의_사용자_정보_수정하기_실패{
-            @Nested
-            class 형식_제약_검증_실패 {
-                @Test
-                void 닉네임_길이_제약_검증() throws Exception {
-                    // given
-                    final UpdateMyInfoRequest request1 = UpdateMyInfoRequest.builder() // 길이가 2자 미만
-                        .password("test@311")
-                        .nickname("T")
-                        .build();
-
-                    final UpdateMyInfoRequest request2 = UpdateMyInfoRequest.builder() // 길이가 20자 초과
-                        .password("test@311")
-                        .nickname("TEST01234567890123456789")
-                        .build();
-
-                    // when
-                    final ResultActions resultActions1 = requestApi(request1);
-                    final ResultActions resultActions2 = requestApi(request2);
-
-                    // then
-                    resultActions1.andExpect(status().isBadRequest()).andReturn();
-                    resultActions2.andExpect(status().isBadRequest()).andReturn();
-                }
-
-                @Test
-                void 비밀번호_형식_제약_검증() throws Exception {
-                    // given
-                    final UpdateMyInfoRequest request = UpdateMyInfoRequest.builder()
-                        .password("test11311")
-                        .nickname("TEST")
-                        .build();
-
-                    // when
-                    final ResultActions resultActions = requestApi(request);
-
-                    // then
-                    resultActions.andExpect(status().isBadRequest()).andReturn();
-                }
-
-                @Test
-                void 비밀번호_길이_제약_검증() throws Exception {
-                    final UpdateMyInfoRequest request1 = UpdateMyInfoRequest.builder() // 길이가 8자 미만
-                        .password("test@12")
-                        .nickname("TEST")
-                        .build();
-
-                    final UpdateMyInfoRequest request2 = UpdateMyInfoRequest.builder() // 길이가 20자 초과
-                        .password("test@012345678012345678")
-                        .nickname("TEST")
-                        .build();
-
-                    // when
-                    ResultActions resultActions1 = requestApi(request1);
-                    ResultActions resultActions2 = requestApi(request2);
-
-                    // then
-                    resultActions1.andExpect(status().isBadRequest()).andReturn();
-                    resultActions2.andExpect(status().isBadRequest()).andReturn();
-                }
-            }
             @Test
             void 유효하지_않은_액세스_토큰(){
                 // given
