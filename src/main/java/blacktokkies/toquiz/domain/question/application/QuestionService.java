@@ -82,16 +82,22 @@ public class QuestionService {
         String activeInfoId,
         Long questionId) {
         Question question = getQuestion(questionId);
-        String panelSid = question.getPanel().getSid();
 
-        List<Long> createdQuestions = getCreatedQuestions(getActiveInfo(activeInfoId), panelSid);
-        checkMyActiveQuestion(createdQuestions, questionId);
+        checkMyCreateQuestion(activeInfoId, question); // 자신이 생성하지 않은 질문이면 예외처리
 
         question.updateContent(modifyQuestionRequest.getContent());
-
         questionRepository.save(question);
 
         return QuestionResponse.toDto(question);
+    }
+
+    @Transactional
+    public void deleteQuestion(Long questionId, String activeInfoId) {
+        Question question = getQuestion(questionId);
+
+        checkMyCreateQuestion(activeInfoId, question); // 자신이 생성하지 않은 질문이면 예외처리
+
+        questionRepository.delete(question);
     }
 
     private void updateLikedQuestions(List<Long> likedQuestionIds, Question question, boolean active) {
@@ -149,8 +155,11 @@ public class QuestionService {
     }
 
     // ------------ [검증 메서드] ------------ //
-    private void checkMyActiveQuestion(List<Long> myActiveQuestions, Long questionId){
-        boolean isMyActiveQuestion = myActiveQuestions.stream().anyMatch(id -> Objects.equals(id, questionId));
-        if(!isMyActiveQuestion) throw new RestApiException(NOT_ACTIVE_QUESTION);
+    private void checkMyCreateQuestion(String activeInfoId, Question question){
+        String panelSid = question.getPanel().getSid();
+        List<Long> createdQuestions = getCreatedQuestions(getActiveInfo(activeInfoId), panelSid);
+
+        boolean isMyActiveQuestion = createdQuestions.stream().anyMatch(id -> Objects.equals(id, question.getId()));
+        if(!isMyActiveQuestion) throw new RestApiException(NOT_MY_CREATE_QUESTION);
     }
 }
