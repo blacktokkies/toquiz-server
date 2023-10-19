@@ -6,6 +6,7 @@ import blacktokkies.toquiz.domain.question.dto.request.ModifyQuestionRequest;
 import blacktokkies.toquiz.domain.question.dto.response.GetQuestionsResponse;
 import blacktokkies.toquiz.domain.question.dto.response.QuestionResponse;
 import blacktokkies.toquiz.domain.question.dto.response.ToggleLikeQuestionResponse;
+import blacktokkies.toquiz.global.common.response.SuccessMessage;
 import blacktokkies.toquiz.global.common.response.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -60,5 +61,15 @@ public class QuestionApi {
         QuestionResponse response = questionService.modifyQuestion(request, activeInfoId, questionId);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
+    }
+
+    @DeleteMapping("api/questions/{questionId}")
+    public ResponseEntity<SuccessMessage> deleteQuestion(
+        @PathVariable Long questionId,
+        @CookieValue("active_info_id") String activeInfoId
+    ){
+        questionService.deleteQuestion(questionId, activeInfoId);
+
+        return ResponseEntity.ok(SuccessMessage.QUESTION_DELETE);
     }
 }
