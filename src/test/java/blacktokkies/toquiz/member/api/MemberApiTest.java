@@ -2,12 +2,12 @@ package blacktokkies.toquiz.member.api;
 
 import blacktokkies.toquiz.domain.member.api.MemberApi;
 import blacktokkies.toquiz.domain.member.application.MemberService;
+import blacktokkies.toquiz.domain.member.dto.request.UpdateMyInfoRequest;
 import blacktokkies.toquiz.domain.member.dto.response.MemberInfoResponse;
 import blacktokkies.toquiz.domain.model.Provider;
 import blacktokkies.toquiz.global.common.error.RestApiException;
 import blacktokkies.toquiz.global.common.response.SuccessResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -44,15 +44,6 @@ public class MemberApiTest {
     private final String accessToken = "eyJhbGciOiJIUzI1NiJ9" +
         ".eyJzdWIiOiJzb29tYW4zMTFAbmF2ZXIuY29tIiwiaWF0IjoxNjkzMjMyMDMyLCJleHAiOjE2OTM0MDQ4MzJ9.TiElWh1AX3T7Rb_Q2g4izZXMiVy_kpFiacEkNnhpNdE";
 
-    private final String refreshToken = "eyJhbGciOiJIUzI1NiJ9" +
-        ".eyJzdWIiOiJzb29tYW4zMTExMTExMUBuYXZlci5jb20iLCJpYXQiOjE2OTc2ODk4NjIsImV4cCI6MTY5ODk4NTg2Mn0" +
-        ".GFVVNyavB80mjhgFi9dIwpRbiKEWIKVFiJHLi_eitgI";
-
-    private final String activeInfoId = "6530b174557a982d57909ab3";
-
-    private final Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
-    private final Cookie activeInfoIdCookie = new Cookie("active_info_id", activeInfoId);
-
     @BeforeEach
     public void init() {
         objectMapper = new ObjectMapper();
@@ -60,22 +51,20 @@ public class MemberApiTest {
     }
 
     @Nested
-    @DisplayName("자신의 정보 가져오기")
+    @DisplayName("자신의 사용자 정보 가져오기")
     class GetMyInfo{
         private ResultActions requestApi() throws Exception {
             return mockMvc.perform(
                 MockMvcRequestBuilders.get("/api/members/me")
                     .contentType(MediaType.APPLICATION_JSON)
                     .header("Authorization", accessToken)
-                    .cookie(refreshTokenCookie)
-                    .cookie(activeInfoIdCookie)
             );
         }
 
         @Test
-        void 자신의_정보_가져오기() throws Exception {
+        void 자신의_사용자_정보_가져오기() throws Exception {
             // given
-            MemberInfoResponse response = MemberInfoResponse.builder()
+            final MemberInfoResponse response = MemberInfoResponse.builder()
                 .id(1L)
                 .email("test311@naver.com")
                 .provider(Provider.LOCAL)
@@ -96,7 +85,7 @@ public class MemberApiTest {
         }
 
         @Nested
-        class 자신의_정보_가져오기_실패{
+        class 자신의_사용자_정보_가져오기_실패{
             @Test
             void 유효하지_않은_액세스_토큰(){
                 // given
@@ -104,6 +93,121 @@ public class MemberApiTest {
 
                 // when, then
                 assertThatThrownBy(() -> requestApi()).hasCause(new RestApiException(INVALID_ACCESS_TOKEN));
+            }
+        }
+    }
+    @Nested
+    @DisplayName("자신의 사용자 정보 수정하기")
+    class UpdateMyInfo{
+        private ResultActions requestApi(UpdateMyInfoRequest request) throws Exception {
+            return mockMvc.perform(
+                MockMvcRequestBuilders.patch("/api/members/me")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+                    .header("Authorization", accessToken)
+            );
+        }
+        @Test
+        void 자신의_사용자_정보_수정하기_성공() throws Exception {
+            // given
+            final UpdateMyInfoRequest request = UpdateMyInfoRequest.builder()
+                .password("modify@311")
+                .nickname("modify")
+                .build();
+
+            final MemberInfoResponse response = MemberInfoResponse.builder()
+                .id(1L)
+                .email("test311@naver.com")
+                .provider(Provider.LOCAL)
+                .nickname("modify")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+            doReturn(response).when(memberService).updateMyInfo(any(UpdateMyInfoRequest.class));
+
+            // when
+            final ResultActions resultActions = requestApi(request);
+
+            // then
+            resultActions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(new SuccessResponse<>(response).getStatusCode()))
+                .andReturn();
+        }
+        @Nested
+        class 자신의_사용자_정보_수정하기_실패{
+            @Nested
+            class 형식_제약_검증_실패 {
+                @Test
+                void 닉네임_길이_제약_검증() throws Exception {
+                    // given
+                    final UpdateMyInfoRequest request1 = UpdateMyInfoRequest.builder() // 길이가 2자 미만
+                        .password("test@311")
+                        .nickname("T")
+                        .build();
+
+                    final UpdateMyInfoRequest request2 = UpdateMyInfoRequest.builder() // 길이가 20자 초과
+                        .password("test@311")
+                        .nickname("TEST01234567890123456789")
+                        .build();
+
+                    // when
+                    final ResultActions resultActions1 = requestApi(request1);
+                    final ResultActions resultActions2 = requestApi(request2);
+
+                    // then
+                    resultActions1.andExpect(status().isBadRequest()).andReturn();
+                    resultActions2.andExpect(status().isBadRequest()).andReturn();
+                }
+
+                @Test
+                void 비밀번호_형식_제약_검증() throws Exception {
+                    // given
+                    final UpdateMyInfoRequest request = UpdateMyInfoRequest.builder()
+                        .password("test11311")
+                        .nickname("TEST")
+                        .build();
+
+                    // when
+                    final ResultActions resultActions = requestApi(request);
+
+                    // then
+                    resultActions.andExpect(status().isBadRequest()).andReturn();
+                }
+
+                @Test
+                void 비밀번호_길이_제약_검증() throws Exception {
+                    final UpdateMyInfoRequest request1 = UpdateMyInfoRequest.builder() // 길이가 8자 미만
+                        .password("test@12")
+                        .nickname("TEST")
+                        .build();
+
+                    final UpdateMyInfoRequest request2 = UpdateMyInfoRequest.builder() // 길이가 20자 초과
+                        .password("test@012345678012345678")
+                        .nickname("TEST")
+                        .build();
+
+                    // when
+                    ResultActions resultActions1 = requestApi(request1);
+                    ResultActions resultActions2 = requestApi(request2);
+
+                    // then
+                    resultActions1.andExpect(status().isBadRequest()).andReturn();
+                    resultActions2.andExpect(status().isBadRequest()).andReturn();
+                }
+            }
+            @Test
+            void 유효하지_않은_액세스_토큰(){
+                // given
+                final UpdateMyInfoRequest request = UpdateMyInfoRequest.builder()
+                    .password("modify@311")
+                    .nickname("modify")
+                    .build();
+
+                doThrow(new RestApiException(INVALID_ACCESS_TOKEN)).when(memberService).updateMyInfo(any(UpdateMyInfoRequest.class));
+
+                // when, then
+                assertThatThrownBy(() -> requestApi(request)).hasCause(new RestApiException(INVALID_ACCESS_TOKEN));
             }
         }
     }
