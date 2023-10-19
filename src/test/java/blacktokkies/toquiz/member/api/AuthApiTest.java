@@ -387,4 +387,56 @@ public class AuthApiTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("리프레시_토큰_갱신")
+    class Refresh{
+        private ResultActions requestApi() throws Exception {
+            return mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/auth/refresh")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("Authentication", accessToken)
+                    .cookie(new Cookie("refresh_token", refreshToken))
+                    .cookie(new Cookie("active_info_id", activeInfoId))
+            );
+        }
+
+        @Test
+        void 리프레시_토큰_갱신_성공() throws Exception {
+            // given
+            final AuthenticateResponse response = authenticationResponse();
+
+            doReturn(response).when(authService).refresh(refreshToken);
+            doReturn(refreshTokenCookie).when(cookieService).issueRefreshTokenCookie(any(String.class));
+
+            // when
+            final ResultActions resultActions = requestApi();
+
+            // then
+            resultActions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(new SuccessResponse<>(response).getStatusCode()))
+                .andReturn();
+        }
+
+        @Nested
+        class 리프레시_토큰_갱신_실패{
+            @Test
+            void 리프레시_토큰에_해당하는_멤버가_존재하지_않음(){
+                // given
+                doThrow(new RestApiException(NOT_EXIST_MEMBER)).when(authService).refresh(refreshToken);
+
+                // when, then
+                assertThatThrownBy(() -> requestApi()).hasCause(new RestApiException(NOT_EXIST_MEMBER));
+            }
+
+            @Test
+            void 유효하지_않은_리프레시_토큰(){
+                // given
+                doThrow(new RestApiException(INVALID_REFRESH_TOKEN)).when(authService).refresh(refreshToken);
+
+                // when, then
+                assertThatThrownBy(() -> requestApi()).hasCause(new RestApiException(INVALID_REFRESH_TOKEN));
+            }
+        }
+    }
 }
