@@ -1,7 +1,9 @@
 package blacktokkies.toquiz.member.api;
 
+import blacktokkies.toquiz.config.WithCustomMockUser;
 import blacktokkies.toquiz.domain.member.api.AuthApi;
 import blacktokkies.toquiz.domain.member.application.AuthService;
+import blacktokkies.toquiz.domain.member.domain.Member;
 import blacktokkies.toquiz.domain.member.dto.request.LoginRequest;
 import blacktokkies.toquiz.domain.member.dto.request.ResignRequest;
 import blacktokkies.toquiz.domain.member.dto.request.SignUpRequest;
@@ -44,14 +46,11 @@ public class AuthApiTest {
     private ObjectMapper objectMapper;
     private MockMvc mockMvc; // HTTP 호출을 위해 사용
 
-    private final String accessToken = "eyJhbGciOiJIUzI1NiJ9" +
-        ".eyJzdWIiOiJzb29tYW4zMTFAbmF2ZXIuY29tIiwiaWF0IjoxNjkzMjMyMDMyLCJleHAiOjE2OTM0MDQ4MzJ9.TiElWh1AX3T7Rb_Q2g4izZXMiVy_kpFiacEkNnhpNdE";
+    private final String accessToken = "{AccessToken}";
 
-    private final String refreshToken = "eyJhbGciOiJIUzI1NiJ9" +
-        ".eyJzdWIiOiJzb29tYW4zMTExMTExMUBuYXZlci5jb20iLCJpYXQiOjE2OTc2ODk4NjIsImV4cCI6MTY5ODk4NTg2Mn0" +
-        ".GFVVNyavB80mjhgFi9dIwpRbiKEWIKVFiJHLi_eitgI";
+    private final String refreshToken = "{RefreshToken}";
 
-    private final String activeInfoId = "6530b174557a982d57909ab3";
+    private final String activeInfoId = "{ActiveInfoId}";
 
     private final Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
     private final Cookie activeInfoIdCookie = new Cookie("active_info_id", activeInfoId);
@@ -73,6 +72,107 @@ public class AuthApiTest {
             .updatedAt(LocalDateTime.now())
             .accessToken(accessToken)
             .build();
+    }
+
+    private void checkResultIsAuthenticationResponse(ResultActions resultActions) throws Exception {
+        resultActions.andExpect(jsonPath("$.result.id").exists())
+            .andExpect(jsonPath("$.result.email").exists())
+            .andExpect(jsonPath("$.result.nickname").exists())
+            .andExpect(jsonPath("$.result.provider").exists())
+            .andExpect(jsonPath("$.result.createdAt").exists())
+            .andExpect(jsonPath("$.result.updatedAt").exists())
+            .andExpect(jsonPath("$.result.accessToken").exists())
+            .andReturn();
+    }
+
+    @Nested
+    @DisplayName("Validation 검증")
+    class Validation{
+        private ResultActions requestApi(SignUpRequest request) throws Exception {
+            return mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/auth/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            );
+        }
+        @Test
+        void 닉네임_길이_제약_검증() throws Exception {
+            // given
+            final SignUpRequest request1 = SignUpRequest.builder() // 길이가 2자 미만
+                .email("test311@naver.com")
+                .password("test@311")
+                .nickname("T")
+                .build();
+
+            final SignUpRequest request2 = SignUpRequest.builder() // 길이가 20자 초과
+                .email("test311@naver.com")
+                .password("test@311")
+                .nickname("TEST01234567890123456789")
+                .build();
+
+            // when
+            final ResultActions resultActions1 = requestApi(request1);
+            final ResultActions resultActions2 = requestApi(request2);
+
+            // then
+            resultActions1.andExpect(status().isBadRequest()).andReturn();
+            resultActions2.andExpect(status().isBadRequest()).andReturn();
+        }
+
+        @Test
+        void 비밀번호_형식_제약_검증() throws Exception {
+            // given
+            final SignUpRequest request = SignUpRequest.builder()
+                .email("test311@naver.com")
+                .password("test11311")
+                .nickname("TEST")
+                .build();
+
+            // when
+            final ResultActions resultActions = requestApi(request);
+
+            // then
+            resultActions.andExpect(status().isBadRequest()).andReturn();
+        }
+
+        @Test
+        void 비밀번호_길이_제약_검증() throws Exception {
+            final SignUpRequest request1 = SignUpRequest.builder() // 길이가 8자 미만
+                .email("test311@naver.com")
+                .password("test@12")
+                .nickname("TEST")
+                .build();
+
+            final SignUpRequest request2 = SignUpRequest.builder() // 길이가 20자 초과
+                .email("test311@naver.com")
+                .password("test@012345678012345678")
+                .nickname("TEST")
+                .build();
+
+            // when
+            ResultActions resultActions1 = requestApi(request1);
+            ResultActions resultActions2 = requestApi(request2);
+
+            // then
+            resultActions1.andExpect(status().isBadRequest()).andReturn();
+            resultActions2.andExpect(status().isBadRequest()).andReturn();
+        }
+
+        @Test
+        void 아이디_형식_제약_검증() throws Exception {
+            // given
+            final SignUpRequest request = SignUpRequest.builder()
+                .email("test311")
+                .password("test11311")
+                .nickname("TEST")
+                .build();
+
+            // when
+            final ResultActions resultActions = requestApi(request);
+
+            // then
+            resultActions.andExpect(status().isBadRequest()).andReturn();
+        }
     }
 
     @Nested
@@ -109,88 +209,6 @@ public class AuthApiTest {
 
         @Nested
         class 회원가입_실패 {
-
-            @Nested
-            class 형식_제약_검증_실패 {
-                @Test
-                void 닉네임_길이_제약_검증() throws Exception {
-                    // given
-                    final SignUpRequest request1 = SignUpRequest.builder() // 길이가 2자 미만
-                        .email("test311@naver.com")
-                        .password("test@311")
-                        .nickname("T")
-                        .build();
-
-                    final SignUpRequest request2 = SignUpRequest.builder() // 길이가 20자 초과
-                        .email("test311@naver.com")
-                        .password("test@311")
-                        .nickname("TEST01234567890123456789")
-                        .build();
-
-                    // when
-                    final ResultActions resultActions1 = requestApi(request1);
-                    final ResultActions resultActions2 = requestApi(request2);
-
-                    // then
-                    resultActions1.andExpect(status().isBadRequest()).andReturn();
-                    resultActions2.andExpect(status().isBadRequest()).andReturn();
-                }
-
-                @Test
-                void 비밀번호_형식_제약_검증() throws Exception {
-                    // given
-                    final SignUpRequest request = SignUpRequest.builder()
-                        .email("test311@naver.com")
-                        .password("test11311")
-                        .nickname("TEST")
-                        .build();
-
-                    // when
-                    final ResultActions resultActions = requestApi(request);
-
-                    // then
-                    resultActions.andExpect(status().isBadRequest()).andReturn();
-                }
-
-                @Test
-                void 비밀번호_길이_제약_검증() throws Exception {
-                    final SignUpRequest request1 = SignUpRequest.builder() // 길이가 8자 미만
-                        .email("test311@naver.com")
-                        .password("test@12")
-                        .nickname("TEST")
-                        .build();
-
-                    final SignUpRequest request2 = SignUpRequest.builder() // 길이가 20자 초과
-                        .email("test311@naver.com")
-                        .password("test@012345678012345678")
-                        .nickname("TEST")
-                        .build();
-
-                    // when
-                    ResultActions resultActions1 = requestApi(request1);
-                    ResultActions resultActions2 = requestApi(request2);
-
-                    // then
-                    resultActions1.andExpect(status().isBadRequest()).andReturn();
-                    resultActions2.andExpect(status().isBadRequest()).andReturn();
-                }
-
-                @Test
-                void 아이디_형식_제약_검증() throws Exception {
-                    // given
-                    final SignUpRequest request = SignUpRequest.builder()
-                        .email("test311")
-                        .password("test11311")
-                        .nickname("TEST")
-                        .build();
-
-                    // when
-                    final ResultActions resultActions = requestApi(request);
-
-                    // then
-                    resultActions.andExpect(status().isBadRequest()).andReturn();
-                }
-            }
 
             @Test
             void 이메일_중복() {
@@ -258,65 +276,11 @@ public class AuthApiTest {
             resultActions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.statusCode").value(new SuccessResponse<>(response).getStatusCode()))
                 .andReturn();
+            checkResultIsAuthenticationResponse(resultActions);
         }
 
         @Nested
         class 로그인_실패 {
-            @Nested
-            class 형식_제약_검증_실패 {
-                @Test
-                void 비밀번호_형식_제약_검증() throws Exception {
-                    // given
-                    final LoginRequest request = LoginRequest.builder()
-                        .email("test311@naver.com")
-                        .password("test11311")
-                        .build();
-
-                    // when
-                    final ResultActions resultActions = requestApi(request);
-
-                    // then
-                    resultActions.andExpect(status().isBadRequest()).andReturn();
-                }
-
-                @Test
-                void 비밀번호_길이_제약_검증() throws Exception {
-                    // given
-                    final LoginRequest request1 = LoginRequest.builder() // 길이가 8자 미만
-                        .email("test311@naver.com")
-                        .password("test@12")
-                        .build();
-
-                    final LoginRequest request2 = LoginRequest.builder() // 길이가 20자 초과
-                        .email("test311@naver.com")
-                        .password("test@012345678012345678")
-                        .build();
-
-                    // when
-                    ResultActions resultActions1 = requestApi(request1);
-                    ResultActions resultActions2 = requestApi(request2);
-
-                    // then
-                    resultActions1.andExpect(status().isBadRequest()).andReturn();
-                    resultActions2.andExpect(status().isBadRequest()).andReturn();
-                }
-
-                @Test
-                void 아이디_형식_제약_검증() throws Exception {
-                    // given
-                    final LoginRequest request = LoginRequest.builder()
-                        .email("test311")
-                        .password("test11311")
-                        .build();
-
-                    // when
-                    final ResultActions resultActions = requestApi(request);
-
-                    // then
-                    resultActions.andExpect(status().isBadRequest()).andReturn();
-                }
-            }
-
             @Test
             void 아이디가_존재하지_않음() {
                 // given
@@ -348,13 +312,14 @@ public class AuthApiTest {
     }
 
     @Nested
+    @WithCustomMockUser
     @DisplayName("로그아웃")
     class Logout {
         private ResultActions requestApi() throws Exception {
             return mockMvc.perform(
                 MockMvcRequestBuilders.post("/api/auth/logout")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .header("Authentication", accessToken)
+                    .header("Authentication", "Bearer " + accessToken)
                     .cookie(new Cookie("refresh_token", refreshToken))
                     .cookie(new Cookie("active_info_id", activeInfoId))
             );
@@ -363,7 +328,7 @@ public class AuthApiTest {
         @Test
         void 로그아웃_성공() throws Exception {
             // given
-            doNothing().when(authService).logout();
+            doNothing().when(authService).logout(any(Member.class));
             doReturn(expiredCookie).when(cookieService).expireCookie(any(String.class));
 
             // when
@@ -380,7 +345,7 @@ public class AuthApiTest {
             @Test
             void 유효하지_않은_액세스_토큰() {
                 // given
-                doThrow(new RestApiException(INVALID_ACCESS_TOKEN)).when(authService).logout();
+                doThrow(new RestApiException(INVALID_ACCESS_TOKEN)).when(authService).logout(any(Member.class));
 
                 // when, then
                 assertThatThrownBy(() -> requestApi()).hasCause(new RestApiException(INVALID_ACCESS_TOKEN));
@@ -389,13 +354,14 @@ public class AuthApiTest {
     }
 
     @Nested
+    @WithCustomMockUser
     @DisplayName("리프레시_토큰_갱신")
     class Refresh{
         private ResultActions requestApi() throws Exception {
             return mockMvc.perform(
                 MockMvcRequestBuilders.post("/api/auth/refresh")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .header("Authentication", accessToken)
+                    .header("Authentication", "Bearer " + accessToken)
                     .cookie(new Cookie("refresh_token", refreshToken))
                     .cookie(new Cookie("active_info_id", activeInfoId))
             );
@@ -406,7 +372,7 @@ public class AuthApiTest {
             // given
             final AuthenticateResponse response = authenticationResponse();
 
-            doReturn(response).when(authService).refresh(refreshToken);
+            doReturn(response).when(authService).refresh(any(Member.class), any(String.class));
             doReturn(refreshTokenCookie).when(cookieService).issueRefreshTokenCookie(any(String.class));
 
             // when
@@ -416,6 +382,7 @@ public class AuthApiTest {
             resultActions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.statusCode").value(new SuccessResponse<>(response).getStatusCode()))
                 .andReturn();
+            checkResultIsAuthenticationResponse(resultActions);
         }
 
         @Nested
@@ -423,7 +390,8 @@ public class AuthApiTest {
             @Test
             void 리프레시_토큰에_해당하는_멤버가_존재하지_않음(){
                 // given
-                doThrow(new RestApiException(NOT_EXIST_MEMBER)).when(authService).refresh(refreshToken);
+                doThrow(new RestApiException(NOT_EXIST_MEMBER)).when(authService)
+                    .refresh(any(Member.class), any(String.class));
 
                 // when, then
                 assertThatThrownBy(() -> requestApi()).hasCause(new RestApiException(NOT_EXIST_MEMBER));
@@ -432,7 +400,8 @@ public class AuthApiTest {
             @Test
             void 유효하지_않은_리프레시_토큰(){
                 // given
-                doThrow(new RestApiException(INVALID_REFRESH_TOKEN)).when(authService).refresh(refreshToken);
+                doThrow(new RestApiException(INVALID_REFRESH_TOKEN)).when(authService)
+                    .refresh(any(Member.class), any(String.class));
 
                 // when, then
                 assertThatThrownBy(() -> requestApi()).hasCause(new RestApiException(INVALID_REFRESH_TOKEN));
@@ -448,7 +417,7 @@ public class AuthApiTest {
                 MockMvcRequestBuilders.post("/api/auth/resign")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
-                    .header("Authentication", accessToken)
+                    .header("Authentication", "Bearer " + accessToken)
                     .cookie(new Cookie("refresh_token", refreshToken))
                     .cookie(new Cookie("active_info_id", activeInfoId))
             );
@@ -460,7 +429,7 @@ public class AuthApiTest {
                 .password("test@311")
                 .build();
 
-            doNothing().when(authService).resign(request.getPassword(), activeInfoId, refreshToken);
+            doNothing().when(authService).resign(any(Member.class), any(String.class), any(String.class));
             doReturn(expiredCookie).when(cookieService).expireCookie(any(String.class));
 
             // when
@@ -474,42 +443,6 @@ public class AuthApiTest {
 
         @Nested
         class 회원_탈퇴_실패{
-            @Nested
-            class 형식_제약_검증_실패{
-                @Test
-                void 비밀번호_형식_제약_검증() throws Exception {
-                    // given
-                    final ResignRequest request = ResignRequest.builder()
-                        .password("test11311")
-                        .build();
-
-                    // when
-                    final ResultActions resultActions = requestApi(request);
-
-                    // then
-                    resultActions.andExpect(status().isBadRequest()).andReturn();
-                }
-
-                @Test
-                void 비밀번호_길이_제약_검증() throws Exception {
-                    // given
-                    final ResignRequest request1 = ResignRequest.builder() // 길이가 8자 미만
-                        .password("test@12")
-                        .build();
-
-                    final ResignRequest request2 = ResignRequest.builder() // 길이가 20자 초과
-                        .password("test@012345678012345678")
-                        .build();
-
-                    // when
-                    ResultActions resultActions1 = requestApi(request1);
-                    ResultActions resultActions2 = requestApi(request2);
-
-                    // then
-                    resultActions1.andExpect(status().isBadRequest()).andReturn();
-                    resultActions2.andExpect(status().isBadRequest()).andReturn();
-                }
-            }
             @Test
             void 비밀번호가_일치하지_않음(){
                 // given
@@ -518,7 +451,7 @@ public class AuthApiTest {
                     .build();
 
                 doThrow(new RestApiException(NOT_MATCH_PASSWORD)).when(authService)
-                    .resign(request.getPassword(), activeInfoId, refreshToken);
+                    .resign(any(Member.class), any(String.class), any(String.class));
 
                 // when, then
                 assertThatThrownBy(() -> requestApi(request)).hasCause(new RestApiException(NOT_MATCH_PASSWORD));
