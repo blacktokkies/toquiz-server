@@ -11,7 +11,6 @@ import blacktokkies.toquiz.domain.member.domain.Member;
 import blacktokkies.toquiz.global.util.auth.PasswordEncryptor;
 import blacktokkies.toquiz.global.util.auth.TokenService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,35 +43,27 @@ public class AuthService {
         return AuthenticateResponse.toDto(member, accessToken);
     }
 
-    public void logout(){
-        Member member = getMember();
+    public void logout(Member member){
         tokenService.deleteRefreshToken(member.getEmail());
     }
 
     @Transactional
-    public void resign(String password, String activeInfoId, String refreshToken){
-        Member member = getMember();
-        checkCorrectPassword(password, member.getPassword());
+    public void resign(Member member, String password, String activeInfoId){
+        checkCorrectPassword(password, member.getPassword()); // 비밀번호가 일치하는지 검증
+
+        // RefreshToken, ActiveInfoId, Member를 DB에서 제거
         tokenService.deleteRefreshToken(member.getEmail());
         activeInfoRepository.deleteById(activeInfoId);
         memberRepository.delete(member);
     }
 
-    public AuthenticateResponse refresh(String refreshToken) {
+    public AuthenticateResponse refresh(Member member, String refreshToken) {
         checkExistRefreshToken(refreshToken);
-
-        String email = tokenService.getEmail(refreshToken);
-        Member member = getMemberByEmail(email);
-
         checkValidRefreshToken(refreshToken, member);
 
-        String accessToken = tokenService.generateAccessToken(email);
+        String accessToken = tokenService.generateAccessToken(member.getEmail());
 
         return AuthenticateResponse.toDto(member, accessToken);
-    }
-
-    private Member getMember(){
-        return (Member) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 
     private Member getMemberByEmail(String email) {
