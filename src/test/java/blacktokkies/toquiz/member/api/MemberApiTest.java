@@ -1,7 +1,9 @@
 package blacktokkies.toquiz.member.api;
 
+import blacktokkies.toquiz.config.WithCustomMockUser;
 import blacktokkies.toquiz.domain.member.api.MemberApi;
 import blacktokkies.toquiz.domain.member.application.MemberService;
+import blacktokkies.toquiz.domain.member.domain.Member;
 import blacktokkies.toquiz.domain.member.dto.request.UpdateMyInfoRequest;
 import blacktokkies.toquiz.domain.member.dto.response.MemberInfoResponse;
 import blacktokkies.toquiz.domain.model.Provider;
@@ -51,6 +53,7 @@ public class MemberApiTest {
     }
 
     @Nested
+    @WithCustomMockUser
     @DisplayName("자신의 사용자 정보 가져오기")
     class GetMyInfo{
         private ResultActions requestApi() throws Exception {
@@ -73,7 +76,7 @@ public class MemberApiTest {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-            doReturn(response).when(memberService).getMyInfo();
+            doReturn(response).when(memberService).getMyInfo(any(Member.class));
 
             // when
             final ResultActions resultActions = requestApi();
@@ -89,7 +92,7 @@ public class MemberApiTest {
             @Test
             void 유효하지_않은_액세스_토큰(){
                 // given
-                doThrow(new RestApiException(INVALID_ACCESS_TOKEN)).when(memberService).getMyInfo();
+                doThrow(new RestApiException(INVALID_ACCESS_TOKEN)).when(memberService).getMyInfo(any(Member.class));
 
                 // when, then
                 assertThatThrownBy(() -> requestApi()).hasCause(new RestApiException(INVALID_ACCESS_TOKEN));
@@ -124,7 +127,7 @@ public class MemberApiTest {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-            doReturn(response).when(memberService).updateMyInfo(any(UpdateMyInfoRequest.class));
+            doReturn(response).when(memberService).updateMyInfo(any(Member.class), any(UpdateMyInfoRequest.class));
 
             // when
             final ResultActions resultActions = requestApi(request);
@@ -144,7 +147,7 @@ public class MemberApiTest {
                     .nickname("modify")
                     .build();
 
-                doThrow(new RestApiException(INVALID_ACCESS_TOKEN)).when(memberService).updateMyInfo(any(UpdateMyInfoRequest.class));
+                doThrow(new RestApiException(INVALID_ACCESS_TOKEN)).when(memberService).updateMyInfo(any(Member.class), any(UpdateMyInfoRequest.class));
 
                 // when, then
                 assertThatThrownBy(() -> requestApi(request)).hasCause(new RestApiException(INVALID_ACCESS_TOKEN));
