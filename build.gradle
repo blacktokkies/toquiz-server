@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.1.2'
     id 'io.spring.dependency-management' version '1.1.2'
+    id 'jacoco'
 }
 
 group = 'blacktokkies'
@@ -47,8 +48,24 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-bootJar{
+bootJar {
     archiveBaseName = 'toquiz'
     archiveFileName = 'toquiz.jar'
     archiveVersion = "0.0.0"
+}
+
+// jacoco : 테스트 커버리지 측정을 위한 툴
+jacoco {
+    toolVersion = '0.8.10'
+}
+
+jacocoTestReport {
+    dependsOn test // 리포트 생성을 위해 test가 먼저 완료되어야 함
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+
+        html.outputLocation.set(file("${buildDir}/jacoco/index.html"))
+        xml.outputLocation.set(file("${buildDir}/jacoco/index.xml"))
+    }
 }
