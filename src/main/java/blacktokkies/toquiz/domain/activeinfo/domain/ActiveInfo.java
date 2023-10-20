@@ -10,6 +10,8 @@ import java.util.Map;
 
 @Document(collection = "toquiz-member")
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class ActiveInfo {
     @Id
