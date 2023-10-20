@@ -93,7 +93,7 @@ public class AuthService {
     }
 
     private void checkCorrectPassword(String inputPassword, String memberPassword){
-        if(!PasswordEncryptor.matchPassowrd(inputPassword, memberPassword)){
+        if(!PasswordEncryptor.matchPassword(inputPassword, memberPassword)){
             throw new RestApiException(NOT_MATCH_PASSWORD);
         }
     }
