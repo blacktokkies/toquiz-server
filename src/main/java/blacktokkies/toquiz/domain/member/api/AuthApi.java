@@ -1,5 +1,6 @@
 package blacktokkies.toquiz.domain.member.api;
 
+import blacktokkies.toquiz.domain.member.domain.Member;
 import blacktokkies.toquiz.domain.member.dto.request.ResignRequest;
 import blacktokkies.toquiz.domain.member.dto.response.AuthenticateResponse;
 import blacktokkies.toquiz.global.common.response.SuccessMessage;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -38,9 +40,13 @@ public class AuthApi {
     }
 
     @PostMapping("/api/auth/logout")
-    ResponseEntity<SuccessMessage> logout(HttpServletResponse response){
-        authService.logout();
+    ResponseEntity<SuccessMessage> logout(
+        HttpServletResponse response,
+        @AuthenticationPrincipal Member member
+    ){
+        authService.logout(member);
 
+        // 로그아웃 시 서버에서 activeInfoId, refreshToken을 만료하고, 클라이언트에서 accessToken을 만료 함.
         response.addCookie(cookieService.expireCookie("active_info_id"));
         response.addCookie(cookieService.expireCookie("refresh_token"));
 
@@ -51,10 +57,10 @@ public class AuthApi {
     public ResponseEntity<SuccessMessage> deleteMyInfo(
         @RequestBody @Valid ResignRequest request,
         HttpServletResponse response,
-        @CookieValue("active_info_id") String activeInfoId,
-        @CookieValue("refresh_token") String refreshToken
-        ){
-        authService.resign(request.getPassword(), activeInfoId, refreshToken);
+        @AuthenticationPrincipal Member member,
+        @CookieValue("active_info_id") String activeInfoId
+    ){
+        authService.resign(member, request.getPassword(), activeInfoId);
 
         response.addCookie(cookieService.expireCookie("active_info_id"));
         response.addCookie(cookieService.expireCookie("refresh_token"));
@@ -63,8 +69,12 @@ public class AuthApi {
     }
 
     @PostMapping ("/api/auth/refresh")
-    ResponseEntity<SuccessResponse<AuthenticateResponse>> refresh(@CookieValue(name = "refresh_token", required = false) String refreshToken, HttpServletResponse response){
-        AuthenticateResponse refreshResponse = authService.refresh(refreshToken);
+    ResponseEntity<SuccessResponse<AuthenticateResponse>> refresh(
+        HttpServletResponse response,
+        @AuthenticationPrincipal Member member,
+        @CookieValue(name = "refresh_token", required = false) String refreshToken
+    ){
+        AuthenticateResponse refreshResponse = authService.refresh(member, refreshToken);
 
         response.addCookie(cookieService.issueRefreshTokenCookie(refreshResponse.getEmail()));
 
