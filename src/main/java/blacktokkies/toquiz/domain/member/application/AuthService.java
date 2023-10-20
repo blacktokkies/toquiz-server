@@ -66,11 +66,13 @@ public class AuthService {
         return AuthenticateResponse.toDto(member, accessToken);
     }
 
+    // ------------ [엔티티 가져오는 메서드] ------------ //
     private Member getMemberByEmail(String email) {
         return memberRepository.findByEmail(email)
             .orElseThrow(() -> new RestApiException(NOT_EXIST_MEMBER));
     }
 
+    // ------------ [검증 메서드] ------------ //
     private void checkExistDuplicateEmail(String email){
         if(memberRepository.existsByEmail(email)){
             throw new RestApiException(DUPLICATE_EMAIL);
@@ -95,10 +97,7 @@ public class AuthService {
         }
     }
 
-    /**
-     * 예외처리
-     * (RefreshToken이 만료 됨, 저장된 사용자의 RefreshToken과 일치하지 않음)
-     */
+     // RefreshToken이 만료 되거나 저장된 사용자의 RefreshToken과 일치하지 않으면 예외처리
     private void checkValidRefreshToken(String refreshToken, Member member){
         if(!tokenService.isTokenValid(refreshToken, member)){
             throw new RestApiException(INVALID_REFRESH_TOKEN);
