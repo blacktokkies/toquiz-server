@@ -17,13 +17,12 @@ import static blacktokkies.toquiz.domain.member.exception.MemberErrorCode.DUPLIC
 @Transactional(readOnly = true)
 public class MemberService {
     private final MemberRepository memberRepository;
-    public MemberInfoResponse getMyInfo() {
-        return MemberInfoResponse.toDto(getMember());
+    public MemberInfoResponse getMyInfo(Member member) {
+        return MemberInfoResponse.toDto(member);
     }
 
     @Transactional
-    public MemberInfoResponse updateMyInfo(UpdateMyInfoRequest updateMyInfoRequest) {
-        Member member = getMember();
+    public MemberInfoResponse updateMyInfo(Member member, UpdateMyInfoRequest updateMyInfoRequest) {
         updateNickName(member, updateMyInfoRequest.getNickname());
         updatePassword(member, updateMyInfoRequest.getPassword());
         Member updatedMember = memberRepository.save(member);
@@ -45,9 +44,5 @@ public class MemberService {
         if(newPassword == null) return;
 
         member.updatePassword(newPassword);
-    }
-
-    private Member getMember(){
-        return (Member) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }
