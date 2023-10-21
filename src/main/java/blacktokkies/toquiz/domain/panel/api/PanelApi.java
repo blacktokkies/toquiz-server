@@ -1,5 +1,6 @@
 package blacktokkies.toquiz.domain.panel.api;
 
+import blacktokkies.toquiz.domain.activeinfo.ActiveInfoRepository;
 import blacktokkies.toquiz.domain.panel.application.PanelService;
 import blacktokkies.toquiz.domain.panel.dto.request.CreatePanelRequest;
 import blacktokkies.toquiz.domain.panel.dto.request.UpdatePanelRequest;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class PanelApi {
     private final PanelService panelService;
     private final CookieService cookieService;
+    private final ActiveInfoRepository activeInfoRepository;
 
     @PostMapping("api/panel")
     public ResponseEntity<SuccessResponse<PanelResponse>> createPanel(
@@ -54,7 +56,7 @@ public class PanelApi {
     public ResponseEntity<SuccessResponse<PanelResponse>> updatePanel(
         @RequestBody @Valid UpdatePanelRequest request,
         @PathVariable String panelSid
-        ){
+    ){
         PanelResponse response = panelService.updatePanel(request, panelSid);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
@@ -74,7 +76,7 @@ public class PanelApi {
         @CookieValue(value = "active_info_id", required = false) String activeInfoId
     ){
         // ActiveInfoId가 유효하지 않으면, ActiveInfoId를 쿠키로 새로 발급한다.
-        if(activeInfoId == null || panelService.isNotExistActiveInfo(activeInfoId)){
+        if(activeInfoId == null || !activeInfoRepository.existsById(activeInfoId)){
             Cookie activeInfoIdCookie = cookieService.issueActiveInfoIdCookie();
             httpResponse.addCookie(activeInfoIdCookie);
 
