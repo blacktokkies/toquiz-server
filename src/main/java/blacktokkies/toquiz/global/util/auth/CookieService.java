@@ -23,6 +23,7 @@ public class CookieService {
     @Value("${application.security.cookie.refresh-token.expiration}")
     private Integer REFRESH_TOKEN_EXPIRATION;
 
+    // 익명 사용자 ActiveInfoId 쿠키 발급
     public Cookie issueActiveInfoIdCookie(){
         ActiveInfo activeInfo = activeInfoRepository.save(new ActiveInfo());
         Cookie cookie = new Cookie("active_info_id", activeInfo.getId());
@@ -33,7 +34,8 @@ public class CookieService {
         return cookie;
     }
 
-    public Cookie issueActiveInfoIdCookie(String email){
+    // 로그인 사용자 ActiveInfoId 쿠키 발급
+    public Cookie issueActiveInfoIdCookieByEmail(String email){
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new RestApiException(MemberErrorCode.NOT_EXIST_MEMBER));
 

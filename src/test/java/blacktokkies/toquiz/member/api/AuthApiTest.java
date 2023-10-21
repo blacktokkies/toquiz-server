@@ -267,7 +267,7 @@ public class AuthApiTest {
 
             doReturn(response).when(authService).login(any(LoginRequest.class));
             doReturn(refreshTokenCookie).when(cookieService).issueRefreshTokenCookie(any(String.class));
-            doReturn(activeInfoIdCookie).when(cookieService).issueActiveInfoIdCookie(any(String.class));
+            doReturn(activeInfoIdCookie).when(cookieService).issueActiveInfoIdCookieByEmail(any(String.class));
 
             // when
             final ResultActions resultActions = requestApi(request);

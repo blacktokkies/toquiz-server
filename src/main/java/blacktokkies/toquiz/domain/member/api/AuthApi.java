@@ -30,25 +30,25 @@ public class AuthApi {
 
     @PostMapping("/api/auth/login")
     ResponseEntity<SuccessResponse<AuthenticateResponse>> login(@RequestBody @Valid LoginRequest loginRequest,
-                                                                   HttpServletResponse response) {
+                                                                   HttpServletResponse httpResponse) {
         AuthenticateResponse loginResponse = authService.login(loginRequest);
 
-        response.addCookie(cookieService.issueActiveInfoIdCookie(loginResponse.getEmail()));
-        response.addCookie(cookieService.issueRefreshTokenCookie(loginResponse.getEmail()));
+        httpResponse.addCookie(cookieService.issueActiveInfoIdCookieByEmail(loginResponse.getEmail()));
+        httpResponse.addCookie(cookieService.issueRefreshTokenCookie(loginResponse.getEmail()));
 
         return ResponseEntity.ok(new SuccessResponse<>(loginResponse));
     }
 
     @PostMapping("/api/auth/logout")
     ResponseEntity<SuccessMessage> logout(
-        HttpServletResponse response,
+        HttpServletResponse httpResponse,
         @AuthenticationPrincipal Member member
     ){
         authService.logout(member);
 
         // 로그아웃 시 서버에서 activeInfoId, refreshToken을 만료하고, 클라이언트에서 accessToken을 만료 함.
-        response.addCookie(cookieService.expireCookie("active_info_id"));
-        response.addCookie(cookieService.expireCookie("refresh_token"));
+        httpResponse.addCookie(cookieService.expireCookie("active_info_id"));
+        httpResponse.addCookie(cookieService.expireCookie("refresh_token"));
 
         return ResponseEntity.ok(SuccessMessage.LOGOUT);
     }
@@ -56,27 +56,27 @@ public class AuthApi {
     @PostMapping("api/auth/resign")
     public ResponseEntity<SuccessMessage> deleteMyInfo(
         @RequestBody @Valid ResignRequest request,
-        HttpServletResponse response,
+        HttpServletResponse httpResponse,
         @AuthenticationPrincipal Member member,
         @CookieValue("active_info_id") String activeInfoId
     ){
         authService.resign(member, request.getPassword(), activeInfoId);
 
-        response.addCookie(cookieService.expireCookie("active_info_id"));
-        response.addCookie(cookieService.expireCookie("refresh_token"));
+        httpResponse.addCookie(cookieService.expireCookie("active_info_id"));
+        httpResponse.addCookie(cookieService.expireCookie("refresh_token"));
 
         return ResponseEntity.ok(SuccessMessage.RESIGN);
     }
 
     @PostMapping ("/api/auth/refresh")
     ResponseEntity<SuccessResponse<AuthenticateResponse>> refresh(
-        HttpServletResponse response,
+        HttpServletResponse httpResponse,
         @AuthenticationPrincipal Member member,
         @CookieValue(name = "refresh_token", required = false) String refreshToken
     ){
         AuthenticateResponse refreshResponse = authService.refresh(member, refreshToken);
 
-        response.addCookie(cookieService.issueRefreshTokenCookie(refreshResponse.getEmail()));
+        httpResponse.addCookie(cookieService.issueRefreshTokenCookie(refreshResponse.getEmail()));
 
         return ResponseEntity.ok(new SuccessResponse<>(refreshResponse));
     }
