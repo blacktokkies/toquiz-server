@@ -1,6 +1,7 @@
 package blacktokkies.toquiz.domain.panel.api;
 
 import blacktokkies.toquiz.domain.activeinfo.ActiveInfoRepository;
+import blacktokkies.toquiz.domain.member.domain.Member;
 import blacktokkies.toquiz.domain.panel.application.PanelService;
 import blacktokkies.toquiz.domain.panel.dto.request.CreatePanelRequest;
 import blacktokkies.toquiz.domain.panel.dto.request.UpdatePanelRequest;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,25 +31,30 @@ public class PanelApi {
 
     @PostMapping("api/panel")
     public ResponseEntity<SuccessResponse<PanelResponse>> createPanel(
+        @AuthenticationPrincipal Member member,
         @RequestBody  @Valid CreatePanelRequest createPanelRequest
     ){
-        PanelResponse response = panelService.createPanel(createPanelRequest);
+        PanelResponse response = panelService.createPanel(member, createPanelRequest);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
 
     @GetMapping("api/panels")
     public ResponseEntity<SuccessResponse<GetMyPanelsResponse>> getMyPanels(
+        @AuthenticationPrincipal Member member,
         @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable
     ){
-        GetMyPanelsResponse response = panelService.getMyPanels(pageable);
+        GetMyPanelsResponse response = panelService.getMyPanels(member, pageable);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
 
     @DeleteMapping("api/panels/{panelSid}")
-    public ResponseEntity<SuccessMessage> deletePanel(@PathVariable String panelSid){
-        panelService.deletePanel(panelSid);
+    public ResponseEntity<SuccessMessage> deletePanel(
+        @AuthenticationPrincipal Member member,
+        @PathVariable String panelSid
+    ){
+        panelService.deletePanel(member, panelSid);
 
         return ResponseEntity.ok(SuccessMessage.PANEL_DELETE);
     }

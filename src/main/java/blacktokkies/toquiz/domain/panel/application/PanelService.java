@@ -36,15 +36,13 @@ public class PanelService {
     private final PanelRepository panelRepository;
 
     @Transactional
-    public PanelResponse createPanel(CreatePanelRequest createPanelRequest) {
-        Member member = getMember();
+    public PanelResponse createPanel(Member member, CreatePanelRequest createPanelRequest) {
         Panel panel = panelRepository.save(createPanelRequest.toPanelWith(member, generateSecondaryId()));
 
         return PanelResponse.toDto(panel);
     }
 
-    public GetMyPanelsResponse getMyPanels(Pageable pageable){
-        Member member = getMember();
+    public GetMyPanelsResponse getMyPanels(Member member, Pageable pageable){
         Page<Panel> panels = panelRepository.findAllByMember(member, pageable);
         List<PanelResponse> panelResponses =  panels.stream().map(PanelResponse::toDto).toList();
         int nextPage = panels.hasNext() ? pageable.getPageNumber() + 1 : -1;
@@ -53,8 +51,8 @@ public class PanelService {
     }
 
     @Transactional
-    public void deletePanel(String panelSid) {
-        checkIsAuthorizedToDelete(panelSid);
+    public void deletePanel(Member member, String panelSid) {
+        checkIsAuthorizedToDelete(member, panelSid);
 
         panelRepository.deleteBySid(panelSid);
     }
@@ -93,9 +91,8 @@ public class PanelService {
         return sid;
     }
 
-    private void checkIsAuthorizedToDelete(String panelSid) {
+    private void checkIsAuthorizedToDelete(Member member, String panelSid) {
         Panel panel = getPanel(panelSid);
-        Member member = getMember();
 
         if(!Objects.equals(member.getId(), panel.getMember().getId())){
             throw new RestApiException(NOT_AUTHORIZED_DELETE);
@@ -105,10 +102,6 @@ public class PanelService {
     private void checkIsExistPanel(String panelSid){
         panelRepository.findBySid(panelSid)
             .orElseThrow(() -> new RestApiException(NOT_EXIST_PANEL));
-    }
-
-    private Member getMember() {
-        return (Member) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 
     public Panel getPanel(String panelSid){
