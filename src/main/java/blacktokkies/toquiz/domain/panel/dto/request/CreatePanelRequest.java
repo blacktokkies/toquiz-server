@@ -27,7 +27,7 @@ public class CreatePanelRequest {
             .title(title)
             .sid(sid)
             .description(Optional.ofNullable(description).orElse(""))
-            .isArchived(false)
+            .archived(false)
             .scarpNum(0)
             .build();
     }

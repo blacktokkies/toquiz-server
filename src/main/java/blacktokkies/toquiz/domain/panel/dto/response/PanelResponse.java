@@ -1,6 +1,10 @@
 package blacktokkies.toquiz.domain.panel.dto.response;
 
 import blacktokkies.toquiz.domain.panel.domain.Panel;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,8 +22,12 @@ public class PanelResponse {
     private String description;
     private Author author;
     private long scarpNum;
-    private boolean isArchived;
+    private boolean archived;
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime createdAt;
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime updatedAt;
 
     public static PanelResponse toDto(Panel panel){
@@ -28,7 +36,7 @@ public class PanelResponse {
             .title(panel.getTitle())
             .description(panel.getDescription())
             .author(new Author(panel.getMember().getId(), panel.getMember().getNickname()))
-            .isArchived(panel.isArchived())
+            .archived(panel.isArchived())
             .scarpNum(panel.getScarpNum())
             .createdAt(panel.getCreatedDate())
             .updatedAt(panel.getUpdatedDate())
@@ -36,6 +44,7 @@ public class PanelResponse {
     }
 
     @Getter
+    @NoArgsConstructor
     @AllArgsConstructor
     private static class Author{
         private Long id;
