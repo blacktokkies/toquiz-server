@@ -13,9 +13,11 @@ import blacktokkies.toquiz.domain.panel.dto.response.GetMyPanelsResponse;
 import blacktokkies.toquiz.domain.panel.dto.response.PanelResponse;
 import blacktokkies.toquiz.global.common.error.RestApiException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +53,7 @@ public class PanelService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "PanelInfo", key = "#panelSid", cacheManager = "rcm")
     public void deletePanel(Member member, String panelSid) {
         checkIsAuthorizedToDelete(member, panelSid);
 
@@ -58,6 +61,7 @@ public class PanelService {
     }
 
     @Transactional
+    @CachePut(cacheNames = "PanelInfo", key = "#panelSid", cacheManager = "rcm")
     public PanelResponse updatePanel(UpdatePanelRequest updatePanelRequest, String panelSid) {
         Panel panel = getPanel(panelSid);
         panel.updatePanelInfo(
@@ -81,6 +85,11 @@ public class PanelService {
         }
 
         return GetMyActiveInfoResponse.toDto(activePanelMap.get(panelSid));
+    }
+
+    @Cacheable(cacheNames = "PanelInfo", key = "#panelSid", cacheManager = "rcm")
+    public PanelResponse getPanelInfo(String panelSid){
+        return PanelResponse.toDto(getPanel(panelSid));
     }
 
     public String generateSecondaryId(){
