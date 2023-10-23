@@ -55,14 +55,16 @@ public class PanelService {
     @Transactional
     @CacheEvict(cacheNames = "PanelInfo", key = "#panelSid", cacheManager = "rcm")
     public void deletePanel(Member member, String panelSid) {
-        checkIsAuthorizedToDelete(member, panelSid);
+        checkIsPanelManager(member, panelSid);
 
         panelRepository.deleteBySid(panelSid);
     }
 
     @Transactional
     @CachePut(cacheNames = "PanelInfo", key = "#panelSid", cacheManager = "rcm")
-    public PanelResponse updatePanel(UpdatePanelRequest updatePanelRequest, String panelSid) {
+    public PanelResponse updatePanel(Member member, UpdatePanelRequest updatePanelRequest, String panelSid) {
+        checkIsPanelManager(member, panelSid);
+
         Panel panel = getPanel(panelSid);
         panel.updatePanelInfo(
             updatePanelRequest.getTitle(),
@@ -100,7 +102,7 @@ public class PanelService {
         return sid;
     }
 
-    private void checkIsAuthorizedToDelete(Member member, String panelSid) {
+    private void checkIsPanelManager(Member member, String panelSid) {
         Panel panel = getPanel(panelSid);
 
         if(!Objects.equals(member.getId(), panel.getMember().getId())){
