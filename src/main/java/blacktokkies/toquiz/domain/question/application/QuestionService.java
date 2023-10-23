@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static blacktokkies.toquiz.domain.activeinfo.exception.ActiveInfoException.NOT_EXIST_ACTIVE_INFO;
 import static blacktokkies.toquiz.domain.panel.exception.PanelErrorCode.NOT_EXIST_PANEL;
@@ -45,7 +46,7 @@ public class QuestionService {
                 activeInfoId));
 
         ActiveInfo activeInfo = getActiveInfo(activeInfoId);
-        List<Long> createdQuestionIds = getCreatedQuestions(activeInfo, panelSid);
+        Set<Long> createdQuestionIds = getCreatedQuestions(activeInfo, panelSid);
         createdQuestionIds.add(question.getId());
 
         activeInfoRepository.save(activeInfo);
@@ -67,7 +68,7 @@ public class QuestionService {
         String panelSid = question.getPanel().getSid();
 
         ActiveInfo activeInfo = getActiveInfo(activeInfoId);
-        List<Long> likedQuestionIds = getLikedQuestions(activeInfo, panelSid);
+        Set<Long> likedQuestionIds = getLikedQuestions(activeInfo, panelSid);
 
         updateLikedQuestions(likedQuestionIds, question, active);
 
@@ -100,7 +101,7 @@ public class QuestionService {
         questionRepository.delete(question);
     }
 
-    private void updateLikedQuestions(List<Long> likedQuestionIds, Question question, boolean active) {
+    private void updateLikedQuestions(Set<Long> likedQuestionIds, Question question, boolean active) {
         Long questionId = question.getId();
 
         boolean isAlreadyLikedQuestion = likedQuestionIds.stream().anyMatch((id) -> Objects.equals(id, questionId));
@@ -134,7 +135,7 @@ public class QuestionService {
         return activeInfoRepository.findById(activeInfoId).orElseThrow(() -> new RestApiException(NOT_EXIST_ACTIVE_INFO));
     }
 
-    private List<Long> getCreatedQuestions(ActiveInfo activeInfo, String panelSid) {
+    private Set<Long> getCreatedQuestions(ActiveInfo activeInfo, String panelSid) {
         Map<String, ActivePanel> activePanelMap = activeInfo.getActivePanels();
         if (!activePanelMap.containsKey(panelSid)) {
             activePanelMap.put(panelSid, new ActivePanel());
@@ -144,7 +145,7 @@ public class QuestionService {
         return activePanel.getCreatedQuestionIds();
     }
 
-    private List<Long> getLikedQuestions(ActiveInfo activeInfo, String panelSid) {
+    private Set<Long> getLikedQuestions(ActiveInfo activeInfo, String panelSid) {
         Map<String, ActivePanel> activePanelMap = activeInfo.getActivePanels();
         if (!activePanelMap.containsKey(panelSid)) {
             activePanelMap.put(panelSid, new ActivePanel());
@@ -157,7 +158,7 @@ public class QuestionService {
     // ------------ [검증 메서드] ------------ //
     private void checkMyCreateQuestion(String activeInfoId, Question question){
         String panelSid = question.getPanel().getSid();
-        List<Long> createdQuestions = getCreatedQuestions(getActiveInfo(activeInfoId), panelSid);
+        Set<Long> createdQuestions = getCreatedQuestions(getActiveInfo(activeInfoId), panelSid);
 
         boolean isMyActiveQuestion = createdQuestions.stream().anyMatch(id -> Objects.equals(id, question.getId()));
         if(!isMyActiveQuestion) throw new RestApiException(NOT_MY_CREATE_QUESTION);

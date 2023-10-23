@@ -2,11 +2,11 @@ package blacktokkies.toquiz.domain.activeinfo.domain;
 
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 public class ActivePanel {
-    private List<Long> likedQuestionIds = new ArrayList<>();
-    private List<Long> createdQuestionIds = new ArrayList<>();
+    private Set<Long> likedQuestionIds = new HashSet<>();
+    private Set<Long> createdQuestionIds = new HashSet<>();
 }
