@@ -4,13 +4,13 @@ import blacktokkies.toquiz.domain.activeinfo.domain.ActivePanel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @AllArgsConstructor
 public class GetMyActiveInfoResponse {
-    public List<Long> createdIds;
-    public List<Long> likedIds;
+    public Set<Long> createdIds;
+    public Set<Long> likedIds;
 
     public static GetMyActiveInfoResponse toDto(ActivePanel activePanel){
         return new GetMyActiveInfoResponse(
