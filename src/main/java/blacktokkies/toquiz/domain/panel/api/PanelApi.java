@@ -61,17 +61,18 @@ public class PanelApi {
 
     @PatchMapping("api/panels/{panelSid}")
     public ResponseEntity<SuccessResponse<PanelResponse>> updatePanel(
+        @AuthenticationPrincipal Member member,
         @RequestBody @Valid UpdatePanelRequest request,
         @PathVariable String panelSid
     ){
-        PanelResponse response = panelService.updatePanel(request, panelSid);
+        PanelResponse response = panelService.updatePanel(member, request, panelSid);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
 
     @GetMapping("api/panels/{panelSid}")
     public ResponseEntity<SuccessResponse<PanelResponse>> getPanelInfo(@PathVariable String panelSid){
-        PanelResponse response = PanelResponse.toDto(panelService.getPanel(panelSid));
+        PanelResponse response = panelService.getPanelInfo(panelSid);
 
         return ResponseEntity.ok(new SuccessResponse<>(response));
     }
