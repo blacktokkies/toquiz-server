@@ -29,8 +29,10 @@ public class AuthApi {
     }
 
     @PostMapping("/api/auth/login")
-    ResponseEntity<SuccessResponse<AuthenticateResponse>> login(@RequestBody @Valid LoginRequest loginRequest,
-                                                                   HttpServletResponse httpResponse) {
+    ResponseEntity<SuccessResponse<AuthenticateResponse>> login(
+        HttpServletResponse httpResponse,
+        @RequestBody @Valid LoginRequest loginRequest
+    ){
         AuthenticateResponse loginResponse = authService.login(loginRequest);
 
         httpResponse.addCookie(cookieService.issueActiveInfoIdCookieByEmail(loginResponse.getEmail()));
@@ -52,7 +54,6 @@ public class AuthApi {
 
         return ResponseEntity.ok(SuccessMessage.LOGOUT);
     }
-
     @PostMapping("api/auth/resign")
     public ResponseEntity<SuccessMessage> deleteMyInfo(
         @RequestBody @Valid ResignRequest request,
