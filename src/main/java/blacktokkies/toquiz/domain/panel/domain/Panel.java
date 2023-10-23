@@ -34,7 +34,7 @@ public class Panel extends BaseTime {
     private String description;
 
     @Column(nullable = false)
-    private boolean isArchived;
+    private boolean archived;
 
     @Column(nullable = false)
     private long scarpNum;
