@@ -18,6 +18,12 @@ import java.util.List;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Object> handleAuthenticationException(AuthenticationException e){
+        final ErrorCode errorCode = e.getErrorCode();
+        log.warn("AuthenticationException {}", errorCode.name());
+        return handleExceptionInternal(errorCode);
+    }
     @ExceptionHandler(RestApiException.class)
     public ResponseEntity<Object> handleCustomException(RestApiException e){
         final ErrorCode errorCode = e.getErrorCode();
