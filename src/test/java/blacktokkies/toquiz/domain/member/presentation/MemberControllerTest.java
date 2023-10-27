@@ -1,12 +1,10 @@
-package blacktokkies.toquiz.member.api;
+package blacktokkies.toquiz.domain.member.presentation;
 
-import blacktokkies.toquiz.config.WithCustomMockUser;
-import blacktokkies.toquiz.domain.member.api.MemberApi;
 import blacktokkies.toquiz.domain.member.application.MemberService;
-import blacktokkies.toquiz.domain.member.domain.Member;
-import blacktokkies.toquiz.domain.member.dto.request.UpdateMyInfoRequest;
-import blacktokkies.toquiz.domain.member.dto.response.MemberInfoResponse;
-import blacktokkies.toquiz.domain.model.Provider;
+import blacktokkies.toquiz.domain.member.dto.UpdateMyInfoRequest;
+import blacktokkies.toquiz.domain.member.dto.MemberInfoResponse;
+import blacktokkies.toquiz.domain.member.domain.Provider;
+import blacktokkies.toquiz.global.common.annotation.auth.MemberEmailDto;
 import blacktokkies.toquiz.global.common.error.RestApiException;
 import blacktokkies.toquiz.global.common.response.SuccessResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,25 +24,23 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
 
-import static blacktokkies.toquiz.domain.member.exception.MemberErrorCode.INVALID_ACCESS_TOKEN;
+import static blacktokkies.toquiz.domain.auth.exception.AuthErrorCode.INVALID_ACCESS_TOKEN;
+import static blacktokkies.toquiz.utils.Constants.*;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
-public class MemberApiTest {
+public class MemberControllerTest {
     @InjectMocks
-    private MemberApi memberApi;
+    private MemberController memberApi;
 
     @Mock
     private MemberService memberService;
 
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
-
-    private final String accessToken = "eyJhbGciOiJIUzI1NiJ9" +
-        ".eyJzdWIiOiJzb29tYW4zMTFAbmF2ZXIuY29tIiwiaWF0IjoxNjkzMjMyMDMyLCJleHAiOjE2OTM0MDQ4MzJ9.TiElWh1AX3T7Rb_Q2g4izZXMiVy_kpFiacEkNnhpNdE";
 
     @BeforeEach
     public void init() {
@@ -53,30 +49,30 @@ public class MemberApiTest {
     }
 
     @Nested
-    @WithCustomMockUser
     @DisplayName("자신의 사용자 정보 가져오기")
     class GetMyInfo{
         private ResultActions requestApi() throws Exception {
             return mockMvc.perform(
                 MockMvcRequestBuilders.get("/api/members/me")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .header("Authorization", accessToken)
+                    .header("Authorization", "Bearer " + ACCESS_TOKEN)
             );
         }
 
         @Test
-        void 자신의_사용자_정보_가져오기() throws Exception {
+        @DisplayName("자신의 사용자 정보 가져오기 성공 시, MemberInfoResponse(200)를 반환한다")
+        void When_GetMyInfoSuccess_Expect_ReturnMemberInfoResponse() throws Exception {
             // given
             final MemberInfoResponse response = MemberInfoResponse.builder()
                 .id(1L)
-                .email("test311@naver.com")
+                .email(EMAIL)
                 .provider(Provider.LOCAL)
-                .nickname("TEST")
+                .nickname(NICKNAME)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-            doReturn(response).when(memberService).getMyInfo(any(Member.class));
+            doReturn(response).when(memberService).getMyInfo(any(MemberEmailDto.class));
 
             // when
             final ResultActions resultActions = requestApi();
@@ -88,11 +84,13 @@ public class MemberApiTest {
         }
 
         @Nested
-        class 자신의_사용자_정보_가져오기_실패{
+        @DisplayName("자신의 사용자 정보 가져오기 실패")
+        class GetMyInfoFail{
             @Test
-            void 유효하지_않은_액세스_토큰(){
+            @DisplayName("유효하지 않은 액세스 토큰의 경우, 'INVALID_ACCESS_TOKEN' 예외를 반환한다")
+            void When_RequestInvalidAccessToken_Expect_ThrowException(){
                 // given
-                doThrow(new RestApiException(INVALID_ACCESS_TOKEN)).when(memberService).getMyInfo(any(Member.class));
+                doThrow(new RestApiException(INVALID_ACCESS_TOKEN)).when(memberService).getMyInfo(any(MemberEmailDto.class));
 
                 // when, then
                 assertThatThrownBy(() -> requestApi()).hasCause(new RestApiException(INVALID_ACCESS_TOKEN));
@@ -107,27 +105,28 @@ public class MemberApiTest {
                 MockMvcRequestBuilders.patch("/api/members/me")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
-                    .header("Authorization", accessToken)
+                    .header("Authorization", "Bearer " + ACCESS_TOKEN)
             );
         }
         @Test
-        void 자신의_사용자_정보_수정하기_성공() throws Exception {
+        @DisplayName("자신의 사용자 정보 수정하기 성공 시, MemberInfoResponse(200)을 반환한다")
+        void When_UpdateMyInfoSuccess_Expect_ReturnMemberInfoResponse() throws Exception {
             // given
             final UpdateMyInfoRequest request = UpdateMyInfoRequest.builder()
-                .password("modify@311")
-                .nickname("modify")
+                .password(PW)
+                .nickname(MODIFY_NICKNAME)
                 .build();
 
             final MemberInfoResponse response = MemberInfoResponse.builder()
                 .id(1L)
-                .email("test311@naver.com")
+                .email(EMAIL)
                 .provider(Provider.LOCAL)
-                .nickname("modify")
+                .nickname(MODIFY_NICKNAME)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-            doReturn(response).when(memberService).updateMyInfo(any(Member.class), any(UpdateMyInfoRequest.class));
+            doReturn(response).when(memberService).updateMyInfo(any(MemberEmailDto.class), any(UpdateMyInfoRequest.class));
 
             // when
             final ResultActions resultActions = requestApi(request);
@@ -135,19 +134,22 @@ public class MemberApiTest {
             // then
             resultActions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.statusCode").value(new SuccessResponse<>(response).getStatusCode()))
+                .andExpect(jsonPath("$.result.nickname").value(MODIFY_NICKNAME))
                 .andReturn();
         }
         @Nested
-        class 자신의_사용자_정보_수정하기_실패{
+        @DisplayName("자신의 사용자 정보 수정하기 실패")
+        class UpdateMyInfoFail{
             @Test
-            void 유효하지_않은_액세스_토큰(){
+            @DisplayName("유효하지 않은 액세스 토큰의 경우, 'INVALID_ACCESS_TOKEN' 예외를 반환한다")
+            void When_RequestInvalidAccessToken_Expect_ThrowException(){
                 // given
                 final UpdateMyInfoRequest request = UpdateMyInfoRequest.builder()
-                    .password("modify@311")
-                    .nickname("modify")
+                    .password(PW)
+                    .nickname(MODIFY_NICKNAME)
                     .build();
 
-                doThrow(new RestApiException(INVALID_ACCESS_TOKEN)).when(memberService).updateMyInfo(any(Member.class), any(UpdateMyInfoRequest.class));
+                doThrow(new RestApiException(INVALID_ACCESS_TOKEN)).when(memberService).updateMyInfo(any(MemberEmailDto.class), any(UpdateMyInfoRequest.class));
 
                 // when, then
                 assertThatThrownBy(() -> requestApi(request)).hasCause(new RestApiException(INVALID_ACCESS_TOKEN));
