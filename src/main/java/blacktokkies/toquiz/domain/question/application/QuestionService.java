@@ -3,15 +3,16 @@ package blacktokkies.toquiz.domain.question.application;
 import blacktokkies.toquiz.domain.activeinfo.ActiveInfoRepository;
 import blacktokkies.toquiz.domain.activeinfo.domain.ActiveInfo;
 import blacktokkies.toquiz.domain.activeinfo.domain.ActivePanel;
-import blacktokkies.toquiz.domain.panel.dao.PanelRepository;
+import blacktokkies.toquiz.domain.panel.domain.PanelRepository;
 import blacktokkies.toquiz.domain.panel.domain.Panel;
-import blacktokkies.toquiz.domain.question.dao.QuestionRepository;
+import blacktokkies.toquiz.domain.question.domain.QuestionRepository;
 import blacktokkies.toquiz.domain.question.domain.Question;
-import blacktokkies.toquiz.domain.question.dto.request.CreateQuestionRequest;
-import blacktokkies.toquiz.domain.question.dto.request.ModifyQuestionRequest;
-import blacktokkies.toquiz.domain.question.dto.response.GetQuestionsResponse;
-import blacktokkies.toquiz.domain.question.dto.response.QuestionResponse;
-import blacktokkies.toquiz.domain.question.dto.response.ToggleLikeQuestionResponse;
+import blacktokkies.toquiz.domain.question.dto.CreateQuestionRequest;
+import blacktokkies.toquiz.domain.question.dto.ModifyQuestionRequest;
+import blacktokkies.toquiz.domain.question.dto.GetQuestionsResponse;
+import blacktokkies.toquiz.domain.question.dto.QuestionResponse;
+import blacktokkies.toquiz.domain.question.dto.ToggleLikeQuestionResponse;
+import blacktokkies.toquiz.global.common.annotation.activeInfoId.ActiveInfoIdDto;
 import blacktokkies.toquiz.global.common.error.RestApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,11 +40,12 @@ public class QuestionService {
     @Transactional
     public QuestionResponse createQuestion(
         CreateQuestionRequest createQuestionRequest,
-        String activeInfoId,
-        String panelSid) {
+        ActiveInfoIdDto activeInfoIdDto,
+        String panelSid
+    ) {
+        String activeInfoId = activeInfoIdDto.activeInfoId();
         Question question = questionRepository.save(
-            new Question(createQuestionRequest.getContent(), getPanel(panelSid),
-                activeInfoId));
+            new Question(createQuestionRequest.getContent(), getPanel(panelSid), activeInfoId));
 
         ActiveInfo activeInfo = getActiveInfo(activeInfoId);
         Set<Long> createdQuestionIds = getCreatedQuestions(activeInfo, panelSid);
@@ -51,52 +53,57 @@ public class QuestionService {
 
         activeInfoRepository.save(activeInfo);
 
-        return QuestionResponse.toDto(question);
+        return QuestionResponse.from(question);
     }
 
     public GetQuestionsResponse getQuestions(String panelSid, Pageable pageable) {
         Page<Question> questions = questionRepository.findAllByPanel(getPanel(panelSid), pageable);
-        List<QuestionResponse> questionResponses = questions.stream().map(QuestionResponse::toDto).toList();
+        List<QuestionResponse> questionResponses = questions.stream().map(QuestionResponse::from).toList();
         int nextPage = questions.hasNext() ? pageable.getPageNumber() + 1 : -1;
 
-        return GetQuestionsResponse.toDto(questionResponses, nextPage);
+        return GetQuestionsResponse.of(questionResponses, nextPage);
     }
 
     @Transactional
-    public ToggleLikeQuestionResponse toggleLike(Long questionId, String activeInfoId, boolean active) {
+    public ToggleLikeQuestionResponse toggleLike(
+        Long questionId,
+        ActiveInfoIdDto activeInfoIdDto,
+         boolean active
+    ) {
         Question question = getQuestion(questionId);
         String panelSid = question.getPanel().getSid();
 
-        ActiveInfo activeInfo = getActiveInfo(activeInfoId);
+        ActiveInfo activeInfo = getActiveInfo(activeInfoIdDto.activeInfoId());
         Set<Long> likedQuestionIds = getLikedQuestions(activeInfo, panelSid);
 
         updateLikedQuestions(likedQuestionIds, question, active);
 
         activeInfoRepository.save(activeInfo);
 
-        return ToggleLikeQuestionResponse.toDto(question, active);
+        return ToggleLikeQuestionResponse.of(question, active);
     }
 
     @Transactional
     public QuestionResponse modifyQuestion(
         ModifyQuestionRequest modifyQuestionRequest,
-        String activeInfoId,
-        Long questionId) {
+        ActiveInfoIdDto activeInfoIdDto,
+        Long questionId
+    ) {
         Question question = getQuestion(questionId);
 
-        checkMyCreateQuestion(activeInfoId, question); // 자신이 생성하지 않은 질문이면 예외처리
+        checkMyCreateQuestion(activeInfoIdDto.activeInfoId(), question); // 자신이 생성하지 않은 질문이면 예외처리
 
         question.updateContent(modifyQuestionRequest.getContent());
         questionRepository.save(question);
 
-        return QuestionResponse.toDto(question);
+        return QuestionResponse.from(question);
     }
 
     @Transactional
-    public void deleteQuestion(Long questionId, String activeInfoId) {
+    public void deleteQuestion(Long questionId, ActiveInfoIdDto activeInfoIdDto) {
         Question question = getQuestion(questionId);
 
-        checkMyCreateQuestion(activeInfoId, question); // 자신이 생성하지 않은 질문이면 예외처리
+        checkMyCreateQuestion(activeInfoIdDto.activeInfoId(), question); // 자신이 생성하지 않은 질문이면 예외처리
 
         questionRepository.delete(question);
     }
@@ -123,16 +130,18 @@ public class QuestionService {
 
     // ------------ [엔티티 가져오는 메서드] ------------ //
     private Panel getPanel(String panelSid) {
-        return panelRepository.findBySid(panelSid).orElseThrow(
-            () -> new RestApiException(NOT_EXIST_PANEL));
+        return panelRepository.findBySid(panelSid)
+            .orElseThrow(() -> new RestApiException(NOT_EXIST_PANEL));
     }
 
     private Question getQuestion(Long questionId) {
-        return questionRepository.findById(questionId).orElseThrow(() -> new RestApiException(NOT_EXIST_QUESTION));
+        return questionRepository.findById(questionId)
+            .orElseThrow(() -> new RestApiException(NOT_EXIST_QUESTION));
     }
 
     private ActiveInfo getActiveInfo(String activeInfoId) {
-        return activeInfoRepository.findById(activeInfoId).orElseThrow(() -> new RestApiException(NOT_EXIST_ACTIVE_INFO));
+        return activeInfoRepository.findById(activeInfoId)
+            .orElseThrow(() -> new RestApiException(NOT_EXIST_ACTIVE_INFO));
     }
 
     private Set<Long> getCreatedQuestions(ActiveInfo activeInfo, String panelSid) {

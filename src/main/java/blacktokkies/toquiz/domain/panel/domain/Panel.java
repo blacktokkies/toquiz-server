@@ -1,5 +1,6 @@
 package blacktokkies.toquiz.domain.panel.domain;
 
+import blacktokkies.toquiz.domain.panel.dto.CreatePanelRequest;
 import blacktokkies.toquiz.domain.question.domain.Question;
 import blacktokkies.toquiz.global.common.domain.BaseTime;
 import blacktokkies.toquiz.domain.member.domain.Member;
@@ -8,6 +9,7 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Entity
 @Getter
@@ -41,6 +43,15 @@ public class Panel extends BaseTime {
 
     @OneToMany(mappedBy = "panel", orphanRemoval = true)
     private List<Question> questions = new ArrayList<>();
+
+    public Panel(Member member, CreatePanelRequest createPanelRequest, String sid){
+        this.member = member;
+        this.title = createPanelRequest.getTitle();
+        this.sid = sid;
+        this.description = Optional.ofNullable(createPanelRequest.getDescription()).orElse("");
+        this.archived = false;
+        this.scarpNum = 0;
+    }
 
     public void updatePanelInfo(String title, String description){
         this.title = title;
